@@ -3,6 +3,7 @@ export interface SchematicData {
 		name: string;
 		description?: string;
 		authors: string[];
+		version: string;
 	}
 	tiles: {
 		grid: string[][];
