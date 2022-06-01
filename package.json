@@ -25,7 +25,7 @@
     "@types/node": "^17.0.38"
   },
   "dependencies": {
-    "msch": "file:../msch/msch",
+    "msch": "github:BalaM314/msch",
     "smart-buffer": "^4.2.0"
   }
 }
