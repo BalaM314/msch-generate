@@ -6,7 +6,7 @@ export interface SchematicData {
 	}
 	tiles: {
 		grid: string[][];
-		configs: {
+		blocks: {
 			[name: string]: SchematicConfig;
 		};
 		programs: {
