@@ -2,21 +2,31 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "SchematicConfig": {
+            "description": "Represents the configuration of a block.",
             "properties": {
                 "config": {
-                    "type": [
-                        "string",
-                        "boolean"
-                    ]
+                    "type": "string"
                 },
                 "id": {
+                    "description": "The Mindustry block id. Example: conveyor large-surge-wall micro-processor",
                     "type": "string"
                 },
                 "links": {
+                    "description": "List of links. Unlike in a regular schematic, this is for processor and power node links.",
                     "items": {
                         "type": "string"
                     },
                     "type": "array"
+                },
+                "rotation": {
+                    "description": "0 is right, 1 is up, 2 is left, 3 is down.",
+                    "enum": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ],
+                    "type": "number"
                 }
             },
             "type": "object"
@@ -27,9 +37,11 @@
             "additionalProperties": {
                 "type": "string"
             },
+            "description": "A list of constants that will replace text in your schematic.\nExample: the line `\"foo\": \"bar\"` will cause any text that says \"$foo\" to be replaced with \"bar\".",
             "type": "object"
         },
         "info": {
+            "description": "Contains metadata like name, description, authors, and version.",
             "properties": {
                 "authors": {
                     "items": {
@@ -55,9 +67,11 @@
                     "additionalProperties": {
                         "$ref": "#/definitions/SchematicConfig"
                     },
+                    "description": "A list mapping block names to configs.",
                     "type": "object"
                 },
                 "grid": {
+                    "description": "A grid of block names that specifies how your schematic is laid out.",
                     "items": {
                         "items": {
                             "type": "string"
@@ -80,6 +94,7 @@
                             }
                         ]
                     },
+                    "description": "A list of mlog programs.",
                     "type": "object"
                 }
             },
