@@ -1,11 +1,19 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-        "SchematicConfig": {
+        "SchematicBlockConfig": {
             "description": "Represents the configuration of a block.",
             "properties": {
                 "config": {
-                    "type": "string"
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/TileConfigType"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
                 },
                 "id": {
                     "description": "The Mindustry block id. Example: conveyor large-surge-wall micro-processor",
@@ -30,6 +38,15 @@
                 }
             },
             "type": "object"
+        },
+        "TileConfigType": {
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "type": "number"
         }
     },
     "properties": {
@@ -55,6 +72,12 @@
                 "name": {
                     "type": "string"
                 },
+                "tags": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object"
+                },
                 "version": {
                     "type": "string"
                 }
@@ -65,7 +88,7 @@
             "properties": {
                 "blocks": {
                     "additionalProperties": {
-                        "$ref": "#/definitions/SchematicConfig"
+                        "$ref": "#/definitions/SchematicBlockConfig"
                     },
                     "description": "A list mapping block names to configs.",
                     "type": "object"
