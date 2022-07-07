@@ -1,7 +1,9 @@
 ;
 export var TileConfigType;
 (function (TileConfigType) {
-    TileConfigType[TileConfigType["item"] = 0] = "item";
-    TileConfigType[TileConfigType["program"] = 1] = "program";
-    TileConfigType[TileConfigType["point"] = 2] = "point";
+    TileConfigType["item"] = "item";
+    TileConfigType["program"] = "program";
+    TileConfigType["point"] = "point";
+    TileConfigType["boolean"] = "boolean";
+    TileConfigType["string"] = "string";
 })(TileConfigType || (TileConfigType = {}));

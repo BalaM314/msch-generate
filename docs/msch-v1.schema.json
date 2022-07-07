@@ -7,7 +7,14 @@
                 "config": {
                     "properties": {
                         "type": {
-                            "$ref": "#/definitions/TileConfigType"
+                            "enum": [
+                                "boolean",
+                                "item",
+                                "point",
+                                "program",
+                                "string"
+                            ],
+                            "type": "string"
                         },
                         "value": {
                             "type": "string"
@@ -38,15 +45,6 @@
                 }
             },
             "type": "object"
-        },
-        "TileConfigType": {
-            "enum": [
-                0,
-                1,
-                2,
-                3
-            ],
-            "type": "number"
         }
     },
     "properties": {

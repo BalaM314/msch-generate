@@ -39,14 +39,16 @@ export interface SchematicBlockConfig {
 	/**List of links. Unlike in a regular schematic, this is for processor and power node links. */
 	links?: string[];
 	config?: {
-		type: TileConfigType;
+		type: keyof typeof TileConfigType;
 		value: string;
 	};//this may or may not work
 	rotation?: Rotation;
 }
 
 export enum TileConfigType {
-	"item",
-	"program",
-	"point"
+	"item" = "item",
+	"program" = "program",
+	"point" = "point",
+	"boolean" = "boolean",
+	"string" = "string",
 }
