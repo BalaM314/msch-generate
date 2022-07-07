@@ -1,40 +1,25 @@
 /**
  * WIP
  */
+import { Application } from "cli-app";
 import * as fs from "fs";
-import { Schematic, Tile, Point2, TypeIO, BlockConfig, BlockConfigType } from "msch";
-import { parseArgs } from "./funcs.js";
+import { Schematic, Tile, Point2, TypeIO, BlockConfig, BlockConfigType } from "msch"; // tslint:disable-line
 
-
-
-function main(argv: string[]) {
-	const [parsedArgs, mainArgs] = parseArgs(argv);
-	if("help" in parsedArgs || Object.keys(parsedArgs).length == 0){
-		console.log(
-`MSCH: WIP mindustry schematic parser.
-
-Usage: msch [--help] [--output <output>] [--read <filename>] [--interactive] [--verbose]
-	--read			The path to the file to load as a schematic.
-	--verbose		Whether to be verbose when displaying the loaded schematic. WARNING: may spam console.
-	--help			Displays this help message and exits.
-	--output		The path to the output file.
-	--interactive	Starts a shell, allowing you to edit the schematic by typing JS code.`
-		);
-		return 0;
-	}
+const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
+mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 	let schem:Schematic = Schematic.blank;
 
-	if(parsedArgs["read"]){
+	if(opts.namedArgs["read"]){
 		try {
-			schem = Schematic.from(fs.readFileSync(parsedArgs["read"]));
+			schem = Schematic.from(fs.readFileSync(opts.namedArgs["read"]));
 		} catch(err){
 			console.error("Invalid schematic.", err);
 			return 1;
 		}
-		schem.display("verbose" in parsedArgs);
+		schem.display("verbose" in opts.namedArgs);
 		schem.tags["description"] = "Made with https://github.com/BalaM314/msch";
 	}
-	if("interactive" in parsedArgs){
+	if("interactive" in opts.namedArgs){
 		console.log("Interactive JavaScript shell, type .exit or Ctrl+C to exit.");
 		console.log("The schematic variable is \`schem\`.");
 		let help = "Type .help for help.";
@@ -79,13 +64,24 @@ Usage: msch [--help] [--output <output>] [--read <filename>] [--interactive] [--
 			process.stdout.write("\n> ");
 		})
 	}
-}
+}, true, {
+	namedArgs: {
+		read: {
+			description: "The path to the file to load as a schematic.",
+		},
+		verbose: {
+			description: "Whether to be verbose when displaying the loaded schematic. WARNING: may spam console.",
+			needsValue: false
+		},
+		output: {
+			description: "The path to the output file."
+		},
+		interactive: {
+			description: "Starts a shell, allowing you to edit the schematic by typing JS code.",
+			needsValue: false
+		}
+	},
+	positionalArgs: []
+});
 
-
-try {
-	main(process.argv);
-} catch (err) {
-	console.error("Unhandled runtime error!");
-	console.error(err);
-	process.exit(1);
-}
+mschGenerate.run(process.argv);
