@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BalaM314/msch-generate.git"
+    "url": "git+https://github.com/BalaM314/msch.git"
   },
   "keywords": [
     "mindustry",
@@ -19,9 +19,9 @@
   "author": "BalaM314",
   "license": "GPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/BalaM314/msch-generate/issues"
+    "url": "https://github.com/BalaM314/msch/issues"
   },
-  "homepage": "https://github.com/BalaM314/msch-generate#readme",
+  "homepage": "https://github.com/BalaM314/msch#readme",
   "devDependencies": {
     "@types/node": "^17.0.38",
     "jsonschema": "^1.4.1"
