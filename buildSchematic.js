@@ -1,6 +1,7 @@
 import { Validator } from "jsonschema";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2 } from "msch";
-import { TileConfigType } from "./types";
+import { err } from "./funcs.js";
+import { TileConfigType } from "./types.js";
 function getBlockData(name, data) {
     let config = data.tiles.blocks[name];
     if (!config)
@@ -8,6 +9,12 @@ function getBlockData(name, data) {
     return new Tile(config.id, -1, -1, getBlockConfig(config, data));
 }
 ;
+function getLinks(config, data) {
+    // return config.links.map(link =>
+    // 	data.tiles.blocks[link] ?? (() => {throw new Error(`Unknown link ${link}`)})
+    // );
+    return []; //TODO implement
+}
 function getBlockConfig(config, data) {
     if (!config.config)
         return BlockConfig.null;
@@ -15,7 +22,7 @@ function getBlockConfig(config, data) {
         throw new Error("data is undefined");
     switch (config.config.type) {
         case TileConfigType.item:
-            return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value]]);
+            return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value] ?? err(`Unknown item ${config.config.value}`)]);
         case TileConfigType.point:
             return new BlockConfig(BlockConfigType.point, new Point2(+config.config.value.split(/, ?/)[0], +config.config.value.split(/, ?/)[1]));
         case TileConfigType.program:
@@ -23,16 +30,16 @@ function getBlockConfig(config, data) {
             if (program == undefined)
                 throw new Error(`Unknown program ${program}`);
             if (typeof program == "string") {
-                throw new Error(`Not yet implemented.`);
+                throw new Error(`External programs not yet implemented.`);
             }
             else if (program instanceof Array) {
                 return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
-                    links: [],
+                    links: getLinks(config, data),
                     code: program
                 }));
             }
             else {
-                throw new Error(``);
+                throw new Error(`Program ${program} is of invalid type. Valid types: string[], string`);
             }
     }
 }

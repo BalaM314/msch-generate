@@ -10,11 +10,11 @@ function getBlockData(name:string, data:SchematicData):Tile {
 	return new Tile(config.id, -1, -1, getBlockConfig(config, data));
 };
 
-function getLinks(config:SchematicBlockConfig, data:SchematicData):BlockConfig {
+function getLinks(config:SchematicBlockConfig, data:SchematicData):Link[] {
 	// return config.links.map(link =>
 	// 	data.tiles.blocks[link] ?? (() => {throw new Error(`Unknown link ${link}`)})
 	// );
-	return [];//TODO implement, this will actually be quite hard
+	return [];//TODO implement
 }
 
 function getBlockConfig(config:SchematicBlockConfig, data:SchematicData):BlockConfig {
@@ -35,6 +35,8 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData):BlockCo
 					links: getLinks(config, data),
 					code: program
 				}));
+			} else {
+				throw new Error(`Program ${program} is of invalid type. Valid types: string[], string`);
 			}
 	}
 }

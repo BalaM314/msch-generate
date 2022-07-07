@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "cli-app": "github:BalaM314/cli-app",
-    "msch": "file:../msch",
+    "msch": "github:BalaM314/msch",
     "smart-buffer": "^4.2.0"
   }
 }
