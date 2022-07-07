@@ -36,3 +36,7 @@ export function toHexCodes(buf: Buffer) {
 export function fromHexCodes(str: string): Buffer {
 	return Buffer.from(str.split(" ").map(el => parseInt(el, 16)));
 }
+
+export function err(message:string):never {
+	throw new Error(message);
+}

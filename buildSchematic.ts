@@ -1,6 +1,7 @@
 import { Schema, Validator } from "jsonschema";
-import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2 } from "msch";
-import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types";
+import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2, Link } from "msch";
+import { err } from "./funcs.js";
+import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
 
 
 function getBlockData(name:string, data:SchematicData):Tile {
@@ -9,29 +10,32 @@ function getBlockData(name:string, data:SchematicData):Tile {
 	return new Tile(config.id, -1, -1, getBlockConfig(config, data));
 };
 
+function getLinks(config:SchematicBlockConfig, data:SchematicData):BlockConfig {
+	// return config.links.map(link =>
+	// 	data.tiles.blocks[link] ?? (() => {throw new Error(`Unknown link ${link}`)})
+	// );
+	return [];//TODO implement, this will actually be quite hard
+}
 
 function getBlockConfig(config:SchematicBlockConfig, data:SchematicData):BlockConfig {
 	if(!config.config) return BlockConfig.null;
 	if(!data) throw new Error("data is undefined");
 	switch(config.config.type){
 		case TileConfigType.item:
-			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item]]);
+			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? err(`Unknown item ${config.config.value}`)]);
 		case TileConfigType.point:
 			return new BlockConfig(BlockConfigType.point, new Point2(+config.config.value.split(/, ?/)[0], +config.config.value.split(/, ?/)[1]));
 		case TileConfigType.program:
 			let program = data.tiles.programs[config.config.value];
 			if(program == undefined) throw new Error(`Unknown program ${program}`);
 			if(typeof program == "string"){
-				throw new Error(`Not yet implemented.`);
+				throw new Error(`External programs not yet implemented.`);
 			} else if(program instanceof Array){
-				 return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
-					 links: [],//TODO impl
-					 code: program
-				 }));
-			} else {
-				throw new Error(``);
+				return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
+					links: getLinks(config, data),
+					code: program
+				}));
 			}
-
 	}
 }
 
@@ -49,7 +53,7 @@ function buildSchematic(rawData:string, schema:Schema){
 			description: data.info.description ?? "No description provided.",
 			...data.info.tags
 		};
-		let tiles = data.tiles.grid.map(row =>
+		let tiles:Tile[][] = data.tiles.grid.map(row =>
 			row.map(tile => 
 				getBlockData(tile, data)
 			)
