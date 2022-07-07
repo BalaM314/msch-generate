@@ -4,10 +4,11 @@ import { err } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
 
 
-function getBlockData(name:string, data:SchematicData):Tile {
+function getBlockData(name:string, data:SchematicData, x:number, y:number):Tile|null {
+	if(name == "") return null;
 	let config = data.tiles.blocks[name];
 	if(!config) throw new Error(`No data for block \`${name}\`.`);
-	return new Tile(config.id, -1, -1, getBlockConfig(config, data));
+	return new Tile(config.id, x, y, getBlockConfig(config, data));
 };
 
 function getLinks(config:SchematicBlockConfig, data:SchematicData):Link[] {
@@ -23,8 +24,12 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData):BlockCo
 	switch(config.config.type){
 		case TileConfigType.item:
 			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? err(`Unknown item ${config.config.value}`)]);
+		case TileConfigType.boolean:
+			return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
 		case TileConfigType.point:
 			return new BlockConfig(BlockConfigType.point, new Point2(+config.config.value.split(/, ?/)[0], +config.config.value.split(/, ?/)[1]));
+		case TileConfigType.string:
+			return new BlockConfig(BlockConfigType.string, config.config.value);
 		case TileConfigType.program:
 			let program = data.tiles.programs[config.config.value];
 			if(program == undefined) throw new Error(`Unknown program ${program}`);
@@ -38,10 +43,12 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData):BlockCo
 			} else {
 				throw new Error(`Program ${program} is of invalid type. Valid types: string[], string`);
 			}
+		default:
+			throw new Error(`Invalid config type ${config.config.type}`);
 	}
 }
 
-function buildSchematic(rawData:string, schema:Schema){
+export function buildSchematic(rawData:string, schema:Schema){
 	const jsonschem = new Validator();
 	try {
 		let data:SchematicData = JSON.parse(rawData);
@@ -55,9 +62,9 @@ function buildSchematic(rawData:string, schema:Schema){
 			description: data.info.description ?? "No description provided.",
 			...data.info.tags
 		};
-		let tiles:Tile[][] = data.tiles.grid.map(row =>
-			row.map(tile => 
-				getBlockData(tile, data)
+		let tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
+			row.map((tile, x) => 
+				getBlockData(tile, data, x, height - reversedY - 1)
 			)
 		);
 
@@ -65,7 +72,8 @@ function buildSchematic(rawData:string, schema:Schema){
 
 		return new Schematic(width, height, 1, tags, [], Schematic.unsortTiles(tiles));
 	} catch(err){
-
+		console.error("Failed to build schematic:");
+		console.error(err);
 	}
 }
 

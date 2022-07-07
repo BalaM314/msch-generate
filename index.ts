@@ -3,7 +3,10 @@
  */
 import { Application } from "cli-app";
 import * as fs from "fs";
+import { Schema } from "jsonschema";
 import { Schematic, Tile, Point2, TypeIO, BlockConfig, BlockConfigType } from "msch"; // tslint:disable-line
+import path from "path";
+import { buildSchematic } from "./buildSchematic.js";
 
 const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
 mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
@@ -82,6 +85,46 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 		}
 	},
 	positionalArgs: []
+});
+mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
+	const target:string = opts.positionalArgs[0];
+	if(!fs.existsSync(target)){
+		console.error(`Filepath ${target} does not exist.`);
+		return;
+	}
+	const data:string = fs.readFileSync(target, "utf-8");
+	const schemaPath:string = path.join(app.sourceDirectory, "docs/msch-v1.schema.json");
+	let schema:Schema;
+	if(!fs.existsSync(schemaPath)){
+		throw new Error("JSON schema file does not exist. This was likely caused by an improper or corrupt installation.");
+	}
+	try {
+		schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+	} catch(err){
+		throw new Error("JSON schema file is invalid. This was likely caused by an improper or corrupt installation.");
+	}
+	console.log("Building schematic...");
+	const schem = buildSchematic(data, schema);
+	if(schem){
+		console.log(`Built schematic.`);
+		schem.display(false);
+		console.log(`Writing to ${opts.namedArgs["output"]}...`);
+		fs.writeFileSync(opts.namedArgs["output"]!, schem.write().toBuffer());
+		console.log("Done!");
+	}
+
+}, false, {
+	namedArgs: {
+		output: {
+			description: "Output file location",
+			default: "schematic.msch",
+			required: true
+		}
+	},
+	positionalArgs: [{
+		name: "file",
+		description: "The JSON file to build"
+	}]
 });
 
 mschGenerate.run(process.argv);
