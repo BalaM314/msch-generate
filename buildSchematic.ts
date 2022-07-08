@@ -3,6 +3,7 @@ import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2, Link } fro
 import { err } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
 
+const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"]
 
 function getBlockData(name:string, data:SchematicData, blockX:number, blockY:number):Tile|null {
 	if(name == "") return null;
@@ -23,7 +24,7 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 			.map(([block, x]) => ({
 				x: x - blockX,
 				y: y - blockY,
-				name: block + `_WIP_${x}-${y}` //TODO allow specifying the name
+				name: block + `WIP_${x}-${y}` //TODO allow specifying the name
 			}))
 		).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), [])
 	).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), []);
@@ -33,6 +34,9 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:number, blockY:number):BlockConfig {
 	if(!config.config) return BlockConfig.null;
 	if(!data) throw new Error("data is undefined");
+	if(config.links && powerNodes.includes(config.id)){
+		return new BlockConfig(BlockConfigType.pointarray, getLinks(config, data, blockX, blockY).map(link => new Point2(link.x, link.y)))
+	}
 	switch(config.config.type){
 		case TileConfigType.item:
 			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? err(`Unknown item ${config.config.value}`)]);
