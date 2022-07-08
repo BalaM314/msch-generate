@@ -116,16 +116,15 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
     if (schem) {
         console.log(`Built schematic.`);
         schem.display(false);
-        console.log(`Writing to ${opts.namedArgs["output"]}...`);
-        fs.writeFileSync(opts.namedArgs["output"], schem.write().toBuffer());
+        const outputPath = opts.namedArgs["output"] ?? opts.positionalArgs[0].replace(/\S(.json)?$/, ".msch");
+        console.log(`Writing to ${outputPath}...`);
+        fs.writeFileSync(outputPath, schem.write().toBuffer());
         console.log("Done!");
     }
 }, false, {
     namedArgs: {
         output: {
-            description: "Output file location",
-            default: "schematic.msch",
-            required: true
+            description: "Output file location"
         }
     },
     positionalArgs: [{
