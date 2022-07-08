@@ -2,22 +2,29 @@ import { Validator } from "jsonschema";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2 } from "msch";
 import { err } from "./funcs.js";
 import { TileConfigType } from "./types.js";
-function getBlockData(name, data, x, y) {
+function getBlockData(name, data, blockX, blockY) {
     if (name == "")
         return null;
     let config = data.tiles.blocks[name];
     if (!config)
         throw new Error(`No data for block \`${name}\`.`);
-    return new Tile(config.id, x, y, getBlockConfig(config, data));
+    return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY));
 }
 ;
-function getLinks(config, data) {
-    // return config.links.map(link =>
-    // 	data.tiles.blocks[link] ?? (() => {throw new Error(`Unknown link ${link}`)})
-    // );
-    return []; //TODO implement
+function getLinks(config, data, blockX, blockY) {
+    if (!config.links)
+        return [];
+    return config.links.map(link => data.tiles.grid
+        .reverse() //Reverse the rows so that row 0 is at y position 0 instead of (height - y - 1)
+        .map((row, y) => row.filter(block => block == link)
+        .map((block, x) => ({
+        x: x - blockX,
+        y: y - blockY,
+        name: block + `_WIP_${x}-${y}` //TODO allow specifying the name
+    }))).reduce((accumulator, val) => accumulator.concat(val), [])).reduce((accumulator, val) => accumulator.concat(val), []);
+    //TODO test
 }
-function getBlockConfig(config, data) {
+function getBlockConfig(config, data, blockX, blockY) {
     if (!config.config)
         return BlockConfig.null;
     if (!data)
@@ -40,7 +47,7 @@ function getBlockConfig(config, data) {
             }
             else if (program instanceof Array) {
                 return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
-                    links: getLinks(config, data),
+                    links: getLinks(config, data, blockX, blockY),
                     code: program
                 }));
             }
