@@ -15,7 +15,7 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 	if(!config.links) return [];
 	return config.links.map(link =>
 		data.tiles.grid
-		.reverse() //Reverse the rows so that row 0 is at y position 0 instead of (height - y - 1)
+		.slice().reverse() //Reverse the rows so that row 0 is at y position 0 instead of (height - y - 1)
 		.map((row, y:number) =>
 			row.filter(block => block == link)
 			.map((block:string, x:number) => ({
