@@ -8,7 +8,7 @@ function getBlockData(name:string, data:SchematicData, blockX:number, blockY:num
 	if(name == "") return null;
 	let config = data.tiles.blocks[name];
 	if(!config) throw new Error(`No data for block \`${name}\`.`);
-	return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY));
+	return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY), config.rotation ?? 0);
 };
 
 function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number, blockY:number):Link[] {

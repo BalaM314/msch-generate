@@ -116,7 +116,7 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
     if (schem) {
         console.log(`Built schematic.`);
         schem.display(false);
-        const outputPath = opts.namedArgs["output"] ?? opts.positionalArgs[0].replace(/\S(.json)?$/, ".msch");
+        const outputPath = opts.namedArgs["output"] ?? opts.positionalArgs[0].replace(/(.json)?$/, ".msch");
         console.log(`Writing to ${outputPath}...`);
         fs.writeFileSync(outputPath, schem.write().toBuffer());
         console.log("Done!");
