@@ -17,8 +17,10 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 		data.tiles.grid
 		.slice().reverse() //Reverse the rows so that row 0 is at y position 0 instead of (height - y - 1)
 		.map((row, y:number) =>
-			row.filter(block => block == link)
-			.map((block:string, x:number) => ({
+			row
+			.map((block, x) => [block, x] as [block:string, x:number])
+			.filter(([block, x]) => block == link)
+			.map(([block, x]) => ({
 				x: x - blockX,
 				y: y - blockY,
 				name: block + `_WIP_${x}-${y}` //TODO allow specifying the name

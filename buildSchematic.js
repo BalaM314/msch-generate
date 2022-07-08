@@ -16,8 +16,10 @@ function getLinks(config, data, blockX, blockY) {
         return [];
     return config.links.map(link => data.tiles.grid
         .slice().reverse() //Reverse the rows so that row 0 is at y position 0 instead of (height - y - 1)
-        .map((row, y) => row.filter(block => block == link)
-        .map((block, x) => ({
+        .map((row, y) => row
+        .map((block, x) => [block, x])
+        .filter(([block, x]) => block == link)
+        .map(([block, x]) => ({
         x: x - blockX,
         y: y - blockY,
         name: block + `_WIP_${x}-${y}` //TODO allow specifying the name
