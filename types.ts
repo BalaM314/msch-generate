@@ -36,12 +36,12 @@ export interface SchematicData {
 export interface SchematicBlockConfig {
 	/**The Mindustry block id. Example: conveyor large-surge-wall micro-processor */
 	id: string;
-	/**List of links. Unlike in a regular schematic, this is for processor and power node links. */
+	/**List of links. Unlike in a regular schematic, this is for processor AND power node links. */
 	links?: string[];
 	config?: {
 		type: keyof typeof TileConfigType;
 		value: string;
-	};//this may or may not work
+	};
 	rotation?: Rotation;
 }
 

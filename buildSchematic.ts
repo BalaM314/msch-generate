@@ -11,11 +11,20 @@ function getBlockData(name:string, data:SchematicData, x:number, y:number):Tile|
 	return new Tile(config.id, x, y, getBlockConfig(config, data));
 };
 
-function getLinks(config:SchematicBlockConfig, data:SchematicData):Link[] {
-	// return config.links.map(link =>
-	// 	data.tiles.blocks[link] ?? (() => {throw new Error(`Unknown link ${link}`)})
-	// );
-	return [];//TODO implement
+function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number, blockY:number):Link[] {
+	return config.links.map(link =>
+		data.tiles.grid
+		.reverse() //Reverse the rows so that row 0 is at y position 0 instead of (height - y - 1)
+		.map((row, y:number) =>
+			row.filter(block => block == link)
+			.map((block:string, x:number) => ({
+				x: x - blockX,
+				y: y - blockY,
+				name: block
+			}))
+		)
+	)//Array of the block configs of each item
+	//TODO test
 }
 
 function getBlockConfig(config:SchematicBlockConfig, data:SchematicData):BlockConfig {
