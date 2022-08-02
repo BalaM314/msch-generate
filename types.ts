@@ -9,7 +9,7 @@ export interface SchematicData {
 		version: string;
 		tags?: {
 			[name: string]: string;
-		};
+		}
 	}
 	tiles: {
 		/**A grid of block names that specifies how your schematic is laid out. */
@@ -31,7 +31,7 @@ export interface SchematicData {
 	consts: {
 		[name: string]: string | undefined;
 	}
-};
+}
 /**Represents the configuration of a block. */
 export interface SchematicBlockConfig {
 	/**The Mindustry block id. Example: conveyor large-surge-wall micro-processor */
@@ -41,7 +41,7 @@ export interface SchematicBlockConfig {
 	config?: {
 		type: keyof typeof TileConfigType;
 		value: string;
-	};
+	}
 	rotation?: Rotation;
 }
 

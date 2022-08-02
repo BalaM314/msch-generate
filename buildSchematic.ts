@@ -47,21 +47,44 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 		case TileConfigType.string:
 			return new BlockConfig(BlockConfigType.string, config.config.value);
 		case TileConfigType.program:
-			let program = data.tiles.programs[config.config.value];
-			if(program == undefined) throw new Error(`Unknown program ${program}`);
-			if(typeof program == "string"){
-				throw new Error(`External programs not yet implemented.`);
-			} else if(program instanceof Array){
-				return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
-					links: getLinks(config, data, blockX, blockY),
-					code: program
-				}));
-			} else {
-				throw new Error(`Program ${program} is of invalid type. Valid types: string[], string`);
+			if(!(config.config.value in data.tiles.programs)){
+				throw new Error(`Unknown program ${config.config.value}`);
 			}
+			let program = data.tiles.programs[config.config.value];
+			let code:string[];
+			if(typeof programName == "string"){
+				code = getProgramFromFile(program);
+			} else if(programName instanceof Array){
+				code = program;
+			} else {
+				throw new Error(`Program ${program} is of invalid type. (${typeof programName}) Valid types: string[], string`);
+			}
+			return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
+				links: getLinks(config, data, blockX, blockY),
+				code
+			}));
 		default:
 			throw new Error(`Invalid config type ${config.config.type}`);
 	}
+}
+
+function getProgramFromFile(path:string):string[] {
+	if(path.endsWith(".mlogx")){
+		console.warn("Automatically compiling mlogx files before building is not yet implemented.");
+		let mlogPath = path.slice(0, -1);
+		if(!fs.existsSync(mlogPath) || !fs.lstatSync(mlogPath).isFile()){
+			throw new Error(`Path "${mlogPath}" is not a file.`);
+		}
+		return fs.readFileSync(mlogPath, 'utf-8').split(/\r?\n/g);
+	}
+	if(!fs.existsSync(path)){
+		throw new Error(`Path "${path}" does not exist.`);
+	}
+	if(!fs.lstatSync(path).isFile()){
+		throw new Error(`Path "${path}" is not a file.`);
+	}
+	return fs.readFileSync(path, 'utf-8').split(/\r?\n/g);
+
 }
 
 export function buildSchematic(rawData:string, schema:Schema){
