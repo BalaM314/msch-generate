@@ -2,6 +2,7 @@ import { Schema, Validator } from "jsonschema";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2, Link } from "msch";
 import { err } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
+import * as fs from "fs";
 
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"]
 
@@ -52,12 +53,12 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 			}
 			let program = data.tiles.programs[config.config.value];
 			let code:string[];
-			if(typeof programName == "string"){
+			if(typeof program == "string"){
 				code = getProgramFromFile(program);
-			} else if(programName instanceof Array){
+			} else if(program instanceof Array){
 				code = program;
 			} else {
-				throw new Error(`Program ${program} is of invalid type. (${typeof programName}) Valid types: string[], string`);
+				throw new Error(`Program ${program} is of invalid type. (${typeof program}) Valid types: string[], string`);
 			}
 			return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
 				links: getLinks(config, data, blockX, blockY),

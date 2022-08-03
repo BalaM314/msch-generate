@@ -1,4 +1,3 @@
-;
 export var TileConfigType;
 (function (TileConfigType) {
     TileConfigType["item"] = "item";
