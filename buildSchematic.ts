@@ -1,8 +1,8 @@
+import * as fs from "fs";
 import { Schema, Validator } from "jsonschema";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2, Link } from "msch";
 import { err } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
-import * as fs from "fs";
 
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"]
 
@@ -25,10 +25,14 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 			.map(([block, x]) => ({
 				x: x - blockX,
 				y: y - blockY,
-				name: block + `WIP_${x}-${y}` //TODO allow specifying the name
+				name: block
 			}))
 		).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), [])
-	).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), []);
+	).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), [])
+	.map((link, index) => ({
+		...link,
+		name: link.name + index.toString()
+	}));
 	//TODO test
 }
 
