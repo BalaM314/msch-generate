@@ -139,7 +139,7 @@ export function buildSchematic(rawData:string, schema:Schema){
 
 
 
-		return new Schematic(width, height, 1, tags, [], Schematic.unsortTiles(tiles));
+		return new Schematic(height, width, 1, tags, [], Schematic.unsortTiles(tiles));
 	} catch(err){
 		console.error("Failed to build schematic:");
 		console.error(err);

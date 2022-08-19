@@ -127,7 +127,7 @@ export function buildSchematic(rawData, schema) {
             ...data.info.tags
         };
         const tiles = data.tiles.grid.map((row, reversedY) => row.map((tile, x) => getBlockData(tile, data, x, height - reversedY - 1)));
-        return new Schematic(width, height, 1, tags, [], Schematic.unsortTiles(tiles));
+        return new Schematic(height, width, 1, tags, [], Schematic.unsortTiles(tiles));
     }
     catch (err) {
         console.error("Failed to build schematic:");
