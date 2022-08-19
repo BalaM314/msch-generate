@@ -1,8 +1,8 @@
+import * as fs from "fs";
 import { Validator } from "jsonschema";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2 } from "msch";
 import { err } from "./funcs.js";
 import { TileConfigType } from "./types.js";
-import * as fs from "fs";
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"];
 function getBlockData(name, data, blockX, blockY) {
     if (name == "")
@@ -24,8 +24,12 @@ function getLinks(config, data, blockX, blockY) {
         .map(([block, x]) => ({
         x: x - blockX,
         y: y - blockY,
-        name: block + `WIP_${x}-${y}` //TODO allow specifying the name
-    }))).reduce((accumulator, val) => accumulator.concat(val), [])).reduce((accumulator, val) => accumulator.concat(val), []);
+        name: block
+    }))).reduce((accumulator, val) => accumulator.concat(val), [])).reduce((accumulator, val) => accumulator.concat(val), [])
+        .map((link, index) => ({
+        ...link,
+        name: link.name + index.toString()
+    }));
     //TODO test
 }
 function getBlockConfig(config, data, blockX, blockY) {
@@ -85,6 +89,24 @@ function getProgramFromFile(path) {
     }
     return fs.readFileSync(path, 'utf-8').split(/\r?\n/g);
 }
+function replaceConsts(text, consts) {
+    const specifiedConsts = text.match(/(?<!\\\$\()(?<=\$\()[\w-.]+(?=\))/g);
+    specifiedConsts?.forEach(key => {
+        if (key in consts) {
+            const value = consts[key];
+            text = text.replace(`$(${key})`, value instanceof Array ? value.join(", ") : value);
+        }
+        else {
+            console.warn(`Unknown compiler const ${key}`);
+        }
+    });
+    if (!text.includes("$"))
+        return text;
+    for (const [key, value] of Object.entries(consts).sort((a, b) => b.length - a.length)) {
+        text = text.replaceAll(`$${key}`, value instanceof Array ? value.join(", ") : value);
+    }
+    return text;
+}
 export function buildSchematic(rawData, schema) {
     const jsonschem = new Validator();
     try {
@@ -92,14 +114,19 @@ export function buildSchematic(rawData, schema) {
         jsonschem.validate(data, schema, {
             throwAll: true
         });
-        let width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
-        let height = data.tiles.grid.length;
-        let tags = {
+        const compilerConsts = {
             name: data.info.name,
-            description: data.info.description ?? "No description provided.",
+            version: data.info.version,
+            authors: data.info.authors
+        };
+        const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
+        const height = data.tiles.grid.length;
+        const tags = {
+            name: data.info.name,
+            description: replaceConsts(data.info.description ?? "No description provided.", compilerConsts),
             ...data.info.tags
         };
-        let tiles = data.tiles.grid.map((row, reversedY) => row.map((tile, x) => getBlockData(tile, data, x, height - reversedY - 1)));
+        const tiles = data.tiles.grid.map((row, reversedY) => row.map((tile, x) => getBlockData(tile, data, x, height - reversedY - 1)));
         return new Schematic(width, height, 1, tags, [], Schematic.unsortTiles(tiles));
     }
     catch (err) {

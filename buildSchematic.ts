@@ -92,6 +92,25 @@ function getProgramFromFile(path:string):string[] {
 
 }
 
+function replaceConsts(text:string, consts: {
+	[name: string]: string | string[];
+}){
+	const specifiedConsts = text.match(/(?<!\\\$\()(?<=\$\()[\w-.]+(?=\))/g);
+	specifiedConsts?.forEach(key => {
+		if(key in consts){
+			const value = consts[key];
+			text = text.replace(`$(${key})`, value instanceof Array ? value.join(", ") : value);
+		} else {
+			console.warn(`Unknown compiler const ${key}`);
+		}
+	});
+	if(!text.includes("$")) return text;
+	for(const [key, value] of Object.entries(consts).sort((a, b) => b.length - a.length)){
+		text = text.replaceAll(`$${key}`, value instanceof Array ? value.join(", ") : value);
+	}
+	return text;
+}
+
 export function buildSchematic(rawData:string, schema:Schema){
 	const jsonschem = new Validator();
 	try {
@@ -99,14 +118,20 @@ export function buildSchematic(rawData:string, schema:Schema){
 		jsonschem.validate(data, schema, {
 			throwAll: true
 		});
-		let width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
-		let height = data.tiles.grid.length;
-		let tags = {
+		const compilerConsts = {
 			name: data.info.name,
-			description: data.info.description ?? "No description provided.",
+			version: data.info.version,
+			authors: data.info.authors
+		}
+		const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
+		const height = data.tiles.grid.length;
+		
+		const tags = {
+			name: data.info.name,
+			description: replaceConsts(data.info.description ?? "No description provided.", compilerConsts),
 			...data.info.tags
 		};
-		let tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
+		const tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
 			row.map((tile, x) => 
 				getBlockData(tile, data, x, height - reversedY - 1)
 			)
