@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/BalaM314/msch#readme",
   "devDependencies": {
-    "@types/node": "^17.0.38"
+    "@types/node": "^17.0.38",
+    "typescript-json-schema": "^0.54.0"
   },
   "dependencies": {
     "jsonschema": "^1.4.1",
