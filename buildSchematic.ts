@@ -109,12 +109,15 @@ function replaceConsts(text:string, consts: {
 	return text;
 }
 
-function replaceConstsInConfig(data:SchematicData):SchematicData {
+function replaceConstsInConfig(data:SchematicData, consts: {
+	[id: string]: string | string[];
+}):SchematicData {
 	const compilerConsts = {
 		name: data.info.name,
 		version: data.info.version,
 		authors: data.info.authors,
-		...data.consts
+		...data.consts,
+		...consts
 	}
 	return {
 		info: {
@@ -140,14 +143,18 @@ function replaceConstsInConfig(data:SchematicData):SchematicData {
 	};
 }
 
-export function buildSchematic(rawData:string, schema:Schema){
+export function buildSchematic(rawData:string, schema:Schema, icons: {
+	[id: string]: string;
+}){
 	const jsonschem = new Validator();
 	try {
 		let data:SchematicData = JSON.parse(rawData);
 		jsonschem.validate(data, schema, {
 			throwAll: true
 		});
-		data = replaceConstsInConfig(data);
+		data = replaceConstsInConfig(data, {
+			...icons
+		});
 
 		const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
 		const height = data.tiles.grid.length;

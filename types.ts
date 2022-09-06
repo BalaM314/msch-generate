@@ -16,12 +16,12 @@ export interface SchematicData {
 		grid: string[][];
 		/**A list mapping block names to configs. */
 		blocks: {
-			[name: string]: SchematicBlockConfig | undefined;
+			[name: string]: SchematicBlockConfig;
 		};
 		/**A list of mlog programs. */
 		programs: {
 			/**If an array, interpreted as a program, otherwise interpreted as a path to a program. */
-			[name: string]: string[] | string | undefined;
+			[name: string]: string[] | string;
 		}
 	}
 	/**

@@ -6,6 +6,7 @@ import * as fs from "fs";
 import { Schematic } from "msch"; // tslint:disable-line
 import path from "path";
 import { buildSchematic } from "./buildSchematic.js";
+import { parseIcons } from "./funcs.js";
 const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
 mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
     let schem = Schematic.blank;
@@ -101,9 +102,13 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
     }
     const data = fs.readFileSync(target, "utf-8");
     const schemaPath = path.join(app.sourceDirectory, "docs/msch-v1.schema.json");
+    const iconsPath = path.join(app.sourceDirectory, "cache/icons.properties");
     let schema;
     if (!fs.existsSync(schemaPath)) {
         throw new Error("JSON schema file does not exist. This was likely caused by an improper or corrupt installation.");
+    }
+    if (!fs.existsSync(iconsPath)) {
+        throw new Error("Icons file does not exist. This was likely caused by an improper or corrupt installation.");
     }
     try {
         schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
@@ -111,10 +116,11 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
     catch (err) {
         throw new Error("JSON schema file is invalid. This was likely caused by an improper or corrupt installation.");
     }
+    const icons = parseIcons(fs.readFileSync(iconsPath, 'utf-8').split(/\r?\n/g));
     console.log("Building schematic...");
     const cwd = process.cwd();
     process.chdir(path.join(target, ".."));
-    const schem = buildSchematic(data, schema);
+    const schem = buildSchematic(data, schema, icons);
     process.chdir(cwd);
     if (schem) {
         console.log(`Built schematic.`);

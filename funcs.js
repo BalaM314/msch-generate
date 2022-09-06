@@ -38,3 +38,21 @@ export function fromHexCodes(str) {
 export function err(message) {
     throw new Error(message);
 }
+/**Parses icons out of the data in the icons.properties file from the Mindustry source code. */
+export function parseIcons(data) {
+    const icons = {};
+    for (const line of data) {
+        if (line.length == 0)
+            continue;
+        try {
+            icons["_" + line.split("=")[1].split("|")[0].replaceAll("-", "_")] = String.fromCodePoint(parseInt(line.split("=")[0]));
+        }
+        catch (err) {
+            if (!(err instanceof RangeError)) {
+                console.error(line);
+                throw err;
+            }
+        }
+    }
+    return icons;
+}
