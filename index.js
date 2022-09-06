@@ -141,4 +141,48 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
             description: "The JSON file to build"
         }]
 });
+mschGenerate.command("init", "Creates a JSON schematic file.", (opts, app) => {
+    const jsonData = {
+        "$schema": "https://raw.githubusercontent.com/BalaM314/msch-generate/main/docs/msch-v1.schema.json",
+        info: {
+            name: opts.namedArgs.name,
+            description: opts.namedArgs.description ?? "No description provided.\nGenerated with https://github.com/BalaM314/msch-generate",
+            authors: [...(opts.namedArgs.authors ?? "Unknown").split(/, ?/)],
+            version: "1.0.0"
+        },
+        tiles: {
+            grid: [
+                ["holyBlock"]
+            ],
+            blocks: {
+                holyBlock: {
+                    id: "router"
+                }
+            },
+            programs: {}
+        },
+        consts: {}
+    };
+    const outputJSON = JSON.stringify(jsonData, undefined, `\t`);
+    console.log(`Writing JSON data to ${opts.positionalArgs[0]}`);
+    fs.writeFileSync(opts.positionalArgs[0], outputJSON, "utf-8");
+}, false, {
+    namedArgs: {
+        name: {
+            description: "Project name",
+            required: true,
+        },
+        description: {
+            description: "Project description"
+        },
+        authors: {
+            description: "Project authors"
+        },
+    },
+    positionalArgs: [{
+            name: "file",
+            description: "The path of the JSON file to create",
+            required: true,
+        }]
+});
 mschGenerate.run(process.argv);

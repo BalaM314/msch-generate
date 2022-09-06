@@ -64,7 +64,7 @@ function getBlockConfig(config, data, blockX, blockY) {
                 code
             }));
         default:
-            throw new Error(`Invalid config type ${config.config.type}`);
+            throw new Error(`Invalid config type "${config.config.type}"`);
     }
 }
 function getProgramFromFile(path) {

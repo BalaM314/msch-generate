@@ -66,7 +66,7 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 				code
 			}));
 		default:
-			throw new Error(`Invalid config type ${config.config.type}`);
+			throw new Error(`Invalid config type "${config.config.type}"`);
 	}
 }
 
