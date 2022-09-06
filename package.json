@@ -23,12 +23,11 @@
   },
   "homepage": "https://github.com/BalaM314/msch#readme",
   "devDependencies": {
-    "@types/node": "^17.0.38",
-    "jsonschema": "^1.4.1"
+    "@types/node": "^17.0.38"
   },
   "dependencies": {
+    "jsonschema": "^1.4.1",
     "cli-app": "github:BalaM314/cli-app",
-    "msch": "github:BalaM314/msch",
-    "smart-buffer": "^4.2.0"
+    "msch": "github:BalaM314/msch"
   }
 }
