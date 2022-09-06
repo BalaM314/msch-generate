@@ -24,13 +24,8 @@ function getLinks(config, data, blockX, blockY) {
         .map(([block, x]) => ({
         x: x - blockX,
         y: y - blockY,
-        name: block
-    }))).reduce((accumulator, val) => accumulator.concat(val), [])).reduce((accumulator, val) => accumulator.concat(val), [])
-        .map((link, index) => ({
-        ...link,
-        name: link.name + index.toString()
-    }));
-    //TODO test
+        name: `!!`
+    }))).reduce((accumulator, val) => accumulator.concat(val), [])).reduce((accumulator, val) => accumulator.concat(val), []);
 }
 function getBlockConfig(config, data, blockX, blockY) {
     if (!config.config)
@@ -104,8 +99,38 @@ function replaceConsts(text, consts) {
         return text;
     for (const [key, value] of Object.entries(consts).sort((a, b) => b.length - a.length)) {
         text = text.replaceAll(`$${key}`, value instanceof Array ? value.join(", ") : value);
+        if (!text.includes("$"))
+            return text;
     }
     return text;
+}
+function replaceConstsInConfig(data) {
+    const compilerConsts = {
+        name: data.info.name,
+        version: data.info.version,
+        authors: data.info.authors,
+        ...data.consts
+    };
+    return {
+        info: {
+            ...data.info,
+            description: data.info.description ? replaceConsts(data.info.description, compilerConsts) : undefined
+        },
+        tiles: {
+            grid: data.tiles.grid,
+            programs: data.tiles.programs,
+            blocks: Object.fromEntries(Object.entries(data.tiles.blocks)
+                .map(([name, blockData]) => ([name, {
+                    ...blockData,
+                    id: replaceConsts(blockData.id, compilerConsts),
+                    config: blockData.config ? {
+                        type: blockData.config.type,
+                        value: replaceConsts(blockData.config.value, compilerConsts)
+                    } : undefined
+                }])))
+        },
+        consts: data.consts,
+    };
 }
 export function buildSchematic(rawData, schema) {
     const jsonschem = new Validator();
@@ -114,16 +139,12 @@ export function buildSchematic(rawData, schema) {
         jsonschem.validate(data, schema, {
             throwAll: true
         });
-        const compilerConsts = {
-            name: data.info.name,
-            version: data.info.version,
-            authors: data.info.authors
-        };
+        data = replaceConstsInConfig(data);
         const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
         const height = data.tiles.grid.length;
         const tags = {
             name: data.info.name,
-            description: replaceConsts(data.info.description ?? "No description provided.", compilerConsts),
+            description: data.info.description,
             ...data.info.tags
         };
         const tiles = data.tiles.grid.map((row, reversedY) => row.map((tile, x) => getBlockData(tile, data, x, height - reversedY - 1)));

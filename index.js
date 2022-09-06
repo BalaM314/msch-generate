@@ -112,7 +112,10 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
         throw new Error("JSON schema file is invalid. This was likely caused by an improper or corrupt installation.");
     }
     console.log("Building schematic...");
+    const cwd = process.cwd();
+    process.chdir(path.join(target, ".."));
     const schem = buildSchematic(data, schema);
+    process.chdir(cwd);
     if (schem) {
         console.log(`Built schematic.`);
         schem.display(false);

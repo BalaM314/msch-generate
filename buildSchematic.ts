@@ -25,16 +25,13 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 			.map(([block, x]) => ({
 				x: x - blockX,
 				y: y - blockY,
-				name: block
+				name: `!!`
 			}))
 		).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), [])
 	).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), [])
-	.map((link, index) => ({
-		...link,
-		name: link.name + index.toString()
-	}));
-	//TODO test
 }
+
+
 
 function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:number, blockY:number):BlockConfig {
 	if(!config.config) return BlockConfig.null;
@@ -107,8 +104,40 @@ function replaceConsts(text:string, consts: {
 	if(!text.includes("$")) return text;
 	for(const [key, value] of Object.entries(consts).sort((a, b) => b.length - a.length)){
 		text = text.replaceAll(`$${key}`, value instanceof Array ? value.join(", ") : value);
+		if(!text.includes("$")) return text;
 	}
 	return text;
+}
+
+function replaceConstsInConfig(data:SchematicData):SchematicData {
+	const compilerConsts = {
+		name: data.info.name,
+		version: data.info.version,
+		authors: data.info.authors,
+		...data.consts
+	}
+	return {
+		info: {
+			...data.info,
+			description: data.info.description ? replaceConsts(data.info.description, compilerConsts) : undefined
+		},
+		tiles: {
+			grid: data.tiles.grid,
+			programs: data.tiles.programs,
+			blocks: Object.fromEntries(
+				Object.entries(data.tiles.blocks)
+				.map(([name, blockData]) => ([name, {
+					...blockData,
+					id: replaceConsts(blockData.id, compilerConsts),
+					config: blockData.config ? {
+						type: blockData.config.type,
+						value: replaceConsts(blockData.config.value, compilerConsts)
+					} : undefined
+				}]))
+			)
+		},
+		consts: data.consts,
+	};
 }
 
 export function buildSchematic(rawData:string, schema:Schema){
@@ -118,17 +147,14 @@ export function buildSchematic(rawData:string, schema:Schema){
 		jsonschem.validate(data, schema, {
 			throwAll: true
 		});
-		const compilerConsts = {
-			name: data.info.name,
-			version: data.info.version,
-			authors: data.info.authors
-		}
+		data = replaceConstsInConfig(data);
+
 		const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
 		const height = data.tiles.grid.length;
 		
 		const tags = {
 			name: data.info.name,
-			description: replaceConsts(data.info.description ?? "No description provided.", compilerConsts),
+			description: data.info.description!,
 			...data.info.tags
 		};
 		const tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
