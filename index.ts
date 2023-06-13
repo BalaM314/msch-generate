@@ -33,6 +33,15 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 			if(line.startsWith(".")){
 				if(line == ".exit"){
 					process.exit(0);
+				} else if(line == ".help"){
+					console.log(
+`List of all available commands:
+	.exit	Exits the program.
+	.help Diplays this help information.
+	.output Writes the schematic to the specified file name.
+	.name Sets the name of the schematic.
+	.description Sets the description of the schematic.`
+					);
 				} else if(line.startsWith(".output")){
 					if(line.split(".output ")[1]){
 						let outputPath = line.split(".output")[1]?.endsWith(".msch") ? line.split(".output")[1] : line.split(".output")[1] + ".msch";
@@ -60,7 +69,10 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 				}
 			} else {
 				try {
-					console.log(eval(line));//OH NO ITS NOT SAFE
+					console.log(eval(line));
+					//this line uses eval
+					//which could potentially lead to an arbitrary code execution vulnerability
+					//ive tried to remove it but the feature just doesnt work without it
 				} catch(err){
 					console.error(err);
 				}

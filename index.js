@@ -32,6 +32,16 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
                 if (line == ".exit") {
                     process.exit(0);
                 }
+                else if(line == ".help"){
+                    console.log(
+`List of all available commands:
+	.exit	Exits the program.
+	.help Diplays this help information.
+	.output Writes the schematic to the specified file name.
+	.name Sets the name of the schematic.
+	.description Sets the description of the schematic.`
+                    );
+                }
                 else if (line.startsWith(".output")) {
                     if (line.split(".output ")[1]) {
                         let outputPath = line.split(".output")[1]?.endsWith(".msch") ? line.split(".output")[1] : line.split(".output")[1] + ".msch";
