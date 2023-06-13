@@ -44,7 +44,7 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 					);
 				} else if(line.startsWith(".output")){
 					if(line.split(".output ")[1]){
-						let outputPath = line.split(".output")[1]?.endsWith(".msch") ? line.split(".output")[1] : line.split(".output")[1] + ".msch";
+						let outputPath = line.split(".output ")[1]?.endsWith(".msch") ? line.split(".output ")[1] : line.split(".output ")[1] + ".msch";
 						fs.writeFileSync(outputPath, schem.write().toBuffer());
 						console.log(`Wrote modified file to ${outputPath}.`);
 					} else {
