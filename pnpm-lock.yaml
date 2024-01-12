@@ -11,8 +11,8 @@ dependencies:
     specifier: ^1.7.1
     version: 1.7.1
   msch:
-    specifier: github:balam314/msch
-    version: github.com/balam314/msch/3343e88ff51a41414c58c05e824b2b8eaaf4c723
+    specifier: ^1.0.4
+    version: 1.0.4
 
 devDependencies:
   '@types/node':
@@ -244,6 +244,12 @@ packages:
       yup: 0.32.11
     dev: false
 
+  /msch@1.0.4:
+    resolution: {integrity: sha512-yf/sYxivtFJ6ugPfTE4z6IqRfTvgCUgOJh0VLVEpLB4Y09CSTSIfN5J+ZGM+VvKHxbowqQwXG0rWadvHE8ByNA==}
+    dependencies:
+      smart-buffer: 4.2.0
+    dev: false
+
   /nanoclone@0.2.1:
     resolution: {integrity: sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==}
     dev: false
@@ -422,12 +428,4 @@ packages:
     resolution: {tarball: https://codeload.github.com/BalaM314/cli-app/tar.gz/5334837f8cd897526ed42b75514ab73475ba2b17}
     name: cli-app
     version: 2.2.0
-    dev: false
-
-  github.com/balam314/msch/3343e88ff51a41414c58c05e824b2b8eaaf4c723:
-    resolution: {tarball: https://codeload.github.com/balam314/msch/tar.gz/3343e88ff51a41414c58c05e824b2b8eaaf4c723}
-    name: msch
-    version: 1.0.2
-    dependencies:
-      smart-buffer: 4.2.0
     dev: false
