@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
 Copyright © <BalaM314>, 2024.
 This file is part of msch-generate
