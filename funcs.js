@@ -1,4 +1,3 @@
-import * as fs from "fs";
 /**Parses command line args. */
 export function parseArgs(args) {
     let parsedArgs = {};
@@ -36,7 +35,7 @@ export function toHexCodes(buf) {
 export function fromHexCodes(str) {
     return Buffer.from(str.split(" ").map(el => parseInt(el, 16)));
 }
-export function err(message) {
+export function crash(message) {
     throw new Error(message);
 }
 /**Parses icons out of the data in the icons.properties file from the Mindustry source code. */
@@ -56,12 +55,4 @@ export function parseIcons(data) {
         }
     }
     return icons;
-}
-export function readFileOrNull(path, encoding = "utf8") {
-    if (fs.existsSync(path) && fs.lstatSync(path).isFile()) {
-        return fs.readFileSync(path, encoding);
-    }
-    else {
-        return null;
-    }
 }
