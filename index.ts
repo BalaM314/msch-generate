@@ -85,24 +85,29 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 		})
 	}
 }, true, {
+	positionalArgCountCheck: "warn",
 	namedArgs: {
 		read: {
 			description: "The path to the file to load as a schematic.",
+			aliases: ["r"],
 		},
 		verbose: {
 			description: "Whether to be verbose when displaying the loaded schematic. WARNING: may spam console.",
-			needsValue: false
+			needsValue: false,
+			aliases: ["v"],
 		},
 		output: {
-			description: "The path to the output file."
+			description: "The path to the output file.",
+			aliases: ["o"],
 		},
 		interactive: {
 			description: "Starts a shell, allowing you to edit the schematic by typing JS code.",
-			needsValue: false
+			needsValue: false,
+			aliases: ["i"]
 		}
 	},
 	positionalArgs: []
-});
+}, ["m"]);
 mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
 	const target:string = opts.positionalArgs[0];
 	if(!fs.existsSync(target)){
@@ -139,17 +144,19 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
 		console.log("Done!");
 	}
 
-}, false, {
+}, true, {
 	namedArgs: {
 		output: {
-			description: "Output file location"
+			description: "Output file location",
+			aliases: ["o"],
 		}
 	},
 	positionalArgs: [{
 		name: "file",
 		description: "The JSON file to build"
-	}]
-});
+	}],
+	positionalArgCountCheck: "warn",
+}, ["b"]);
 mschGenerate.command("init", "Creates a JSON schematic file.", (opts, app) => {
 	const jsonData = {
 		"$schema": "https://raw.githubusercontent.com/BalaM314/msch-generate/main/docs/msch-v1.schema.json",
@@ -184,19 +191,23 @@ mschGenerate.command("init", "Creates a JSON schematic file.", (opts, app) => {
 		name: {
 			description: "Project name",
 			required: true,
+			aliases: ["n"],
 		},
 		description: {
-			description: "Project description"
+			description: "Project description",
+			aliases: ["d"],
 		},
 		authors: {
-			description: "Project authors"
+			description: "Project authors",
+			aliases: ["a"],
 		},
 	},
 	positionalArgs: [{
 		name: "file",
 		description: "The path of the JSON file to create",
 		required: true,
-	}]
-});
+	}],
+	positionalArgCountCheck: "warn",
+}, ["i"]);
 
 mschGenerate.run(process.argv);
