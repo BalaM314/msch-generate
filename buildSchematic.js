@@ -136,6 +136,7 @@ function replaceConstsInConfig(data, compilerConsts) {
     return {
         info: {
             ...data.info,
+            name: replaceConsts(data.info.name, compilerConsts),
             description: data.info.description ? replaceConsts(data.info.description, compilerConsts) : undefined
         },
         tiles: {
