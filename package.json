@@ -32,7 +32,7 @@
   "dependencies": {
     "cli-app": "github:BalaM314/cli-app",
     "jsonschema": "^1.4.1",
-    "mlogx": "^1.7.1",
+    "mlogx": "^2.4.1",
     "msch": "^1.0.4"
   }
 }
