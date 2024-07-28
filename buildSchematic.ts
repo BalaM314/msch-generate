@@ -75,6 +75,7 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 
 function getProgramFromFile(path:string, schematicConsts:CompilerConsts):string[] {
 	if(path.endsWith(".mlogx")){
+		console.log(`Compiling prorgam ${path}`);
 		return compileMlogxProgram(path, schematicConsts);
 	}
 	if(!fs.existsSync(path)){
@@ -177,9 +178,8 @@ export function buildSchematic(rawData:string, schema:Schema, icons: {
 	const jsonschem = new Validator();
 	try {
 		let data:SchematicData = JSON.parse(rawData);
-		jsonschem.validate(data, schema, {
-			throwAll: true
-		});
+		const {valid, errors} = jsonschem.validate(data, schema);
+		if(!valid) throw new Error(`Schematic file is invalid: ${errors[0].stack}`);
 		const schematicConsts = getSchematicConsts(data, icons);
 		data = replaceConstsInConfig(data, schematicConsts);
 
