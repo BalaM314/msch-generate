@@ -11,8 +11,7 @@ const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tow
 
 function getBlockData(name:string, data:SchematicData, blockX:number, blockY:number, schematicConsts:CompilerConsts):Tile | null {
 	if(name == "") return null;
-	let config = data.tiles.blocks[name];
-	if(!config) throw new Error(`No data for block \`${name}\`.`);
+	let config = data.tiles.blocks[name] ?? crash(`No data for block \`${name}\`.`);
 	return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY, schematicConsts), config.rotation ?? 0);
 };
 
@@ -118,7 +117,7 @@ function compileMlogxProgram(filepath:string, schematicConsts:CompilerConsts):st
 
 };
 
-function replaceConsts(text:string, consts:CompilerConsts){
+function replaceConsts(text:string, consts:CompilerConsts):string {
 	const specifiedConsts = text.match(/(?<!\\\$\()(?<=\$\()[\w-.]+(?=\))/g);
 	specifiedConsts?.forEach(key => {
 		const value = consts.get(key);
@@ -174,7 +173,7 @@ function replaceConstsInConfig(data:SchematicData, compilerConsts:CompilerConsts
 
 export function buildSchematic(rawData:string, schema:Schema, icons: {
 	[id: string]: string;
-}){
+}):Schematic | undefined {
 	const jsonschem = new Validator();
 	try {
 		let data:SchematicData = JSON.parse(rawData);

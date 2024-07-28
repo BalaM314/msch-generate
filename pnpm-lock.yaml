@@ -18,8 +18,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       msch:
-        specifier: ^1.0.5
-        version: 1.0.5
+        specifier: ^1.1.0
+        version: 1.1.0
     devDependencies:
       '@types/node':
         specifier: ^17.0.38
@@ -181,8 +181,8 @@ packages:
     resolution: {integrity: sha512-IbH7kyL5Ks1+5w7FPOrhOWOdG7RJlQ6emTZOAvmS3f5D8S2nopw4Wv/iXv61jSZncHhgxVYGPmg9MvinQOWpzA==}
     hasBin: true
 
-  msch@1.0.5:
-    resolution: {integrity: sha512-Om/p4Jy3vFxwnCteR8nyhoc2gMzrsMxUNYfDuhLJPYdnYksyDFaGjM68P9LXfycHx3hKKwRqFpwq7OVl6UpWyw==}
+  msch@1.1.0:
+    resolution: {integrity: sha512-qH/zEuo/e4jEp2RKBXS+M/R1fp+6+QWNuIR6zcMviMYuceoco0rrWbkgBVsF/OtSKKqUevri/KZXkD7kBng79w==}
 
   nanoclone@0.2.1:
     resolution: {integrity: sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==}
@@ -404,7 +404,7 @@ snapshots:
       deepmerge: 4.3.1
       yup: 0.32.11
 
-  msch@1.0.5:
+  msch@1.1.0:
     dependencies:
       smart-buffer: 4.2.0
 

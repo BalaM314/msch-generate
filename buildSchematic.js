@@ -9,9 +9,7 @@ const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tow
 function getBlockData(name, data, blockX, blockY, schematicConsts) {
     if (name == "")
         return null;
-    let config = data.tiles.blocks[name];
-    if (!config)
-        throw new Error(`No data for block \`${name}\`.`);
+    let config = data.tiles.blocks[name] ?? crash(`No data for block \`${name}\`.`);
     return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY, schematicConsts), config.rotation ?? 0);
 }
 ;
