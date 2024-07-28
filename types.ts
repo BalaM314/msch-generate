@@ -29,7 +29,7 @@ export interface SchematicData {
 	 * Example: the line `"foo": "bar"` will cause any text that says "$foo" to be replaced with "bar".
 	 */
 	consts: {
-		[name: string]: string | undefined;
+		[name: string]: string;
 	}
 }
 /**Represents the configuration of a block. */

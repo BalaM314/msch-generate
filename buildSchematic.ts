@@ -1,16 +1,19 @@
 import * as fs from "fs";
+import path from "path";
 import { Schema, Validator } from "jsonschema";
+import { compileMlogxToMlog, CompilerConsts, getState, getLocalState, getSettings, CompilerError } from "mlogx";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2, Link } from "msch";
-import { err } from "./funcs.js";
+import { crash } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
+import { Options } from "cli-app";
 
-const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"]
+const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"];
 
-function getBlockData(name:string, data:SchematicData, blockX:number, blockY:number):Tile|null {
+function getBlockData(name:string, data:SchematicData, blockX:number, blockY:number, schematicConsts:CompilerConsts):Tile | null {
 	if(name == "") return null;
 	let config = data.tiles.blocks[name];
 	if(!config) throw new Error(`No data for block \`${name}\`.`);
-	return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY), config.rotation ?? 0);
+	return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY, schematicConsts), config.rotation ?? 0);
 };
 
 function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number, blockY:number):Link[] {
@@ -25,7 +28,7 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 			.map(([block, x]) => ({
 				x: x - blockX,
 				y: y - blockY,
-				name: `!!`
+				name: `!!` //Allow the game to determine it automatically
 			}))
 		).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), [])
 	).reduce((accumulator:Link[], val:Link[]) => accumulator.concat(val), [])
@@ -33,7 +36,7 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 
 
 
-function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:number, blockY:number):BlockConfig {
+function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:number, blockY:number, schematicConsts:CompilerConsts):BlockConfig {
 	if(!config.config) return BlockConfig.null;
 	if(!data) throw new Error("data is undefined");
 	if(config.links && powerNodes.includes(config.id)){
@@ -41,7 +44,7 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 	}
 	switch(config.config.type){
 		case TileConfigType.item:
-			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? err(`Unknown item ${config.config.value}`)]);
+			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? crash(`Unknown item ${config.config.value}`)]);
 		case TileConfigType.boolean:
 			return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
 		case TileConfigType.point:
@@ -50,16 +53,16 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 			return new BlockConfig(BlockConfigType.string, config.config.value);
 		case TileConfigType.program:
 			if(!(config.config.value in data.tiles.programs)){
-				throw new Error(`Unknown program ${config.config.value}`);
+				throw new Error(`Unknown program "${config.config.value}"`);
 			}
 			let program = data.tiles.programs[config.config.value];
 			let code:string[];
 			if(typeof program == "string"){
-				code = getProgramFromFile(program);
+				code = getProgramFromFile(program, schematicConsts);
 			} else if(program instanceof Array){
 				code = program;
 			} else {
-				throw new Error(`Program ${program} is of invalid type. (${typeof program}) Valid types: string[], string`);
+				throw new Error(`Program "${program}" is of invalid type. (${typeof program}) Valid types: string[], string`);
 			}
 			return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
 				links: getLinks(config, data, blockX, blockY),
@@ -70,14 +73,9 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 	}
 }
 
-function getProgramFromFile(path:string):string[] {
+function getProgramFromFile(path:string, schematicConsts:CompilerConsts):string[] {
 	if(path.endsWith(".mlogx")){
-		console.warn("Automatically compiling mlogx files before building is not yet implemented.");
-		let mlogPath = path.slice(0, -1);
-		if(!fs.existsSync(mlogPath) || !fs.lstatSync(mlogPath).isFile()){
-			throw new Error(`Path "${mlogPath}" is not a file.`);
-		}
-		return fs.readFileSync(mlogPath, 'utf-8').split(/\r?\n/g);
+		return compileMlogxProgram(path, schematicConsts);
 	}
 	if(!fs.existsSync(path)){
 		throw new Error(`Path "${path}" does not exist.`);
@@ -89,36 +87,66 @@ function getProgramFromFile(path:string):string[] {
 
 }
 
-function replaceConsts(text:string, consts: {
-	[name: string]: string | string[];
-}){
+function compileMlogxProgram(filepath:string, schematicConsts:CompilerConsts):string[] {
+	const data = fs.readFileSync(filepath, "utf-8").split(/\r?\n/g);
+	const directory = path.join(filepath, "..");
+	
+	const settings = getSettings(directory, true);
+	const globalState = getState(settings, directory, {
+		namedArgs: {}
+	} as Options);
+	const state = getLocalState(globalState,
+		path.extname(filepath),
+		new Map(), //no need for icons, we already have them in schematicConsts
+		schematicConsts,
+	);
+	
+	try {
+		return compileMlogxToMlog(
+			data,
+			state
+		).outputProgram.map(s => s.text);
+	} catch(err){
+		if(err instanceof CompilerError){
+			throw err;
+		} else {
+			console.error(`mlogx crashed!`);
+			throw err;
+		}
+	}
+
+};
+
+function replaceConsts(text:string, consts:CompilerConsts){
 	const specifiedConsts = text.match(/(?<!\\\$\()(?<=\$\()[\w-.]+(?=\))/g);
 	specifiedConsts?.forEach(key => {
-		if(key in consts){
-			const value = consts[key];
-			text = text.replace(`$(${key})`, value instanceof Array ? value.join(", ") : value);
+		const value = consts.get(key);
+		if(value){
+			text = text.replace(`$(${key})`, value instanceof Array ? value.join(", ") : value.toString());
 		} else {
 			console.warn(`Unknown compiler const ${key}`);
 		}
 	});
 	if(!text.includes("$")) return text;
-	for(const [key, value] of Object.entries(consts).sort((a, b) => b.length - a.length)){
-		text = text.replaceAll(`$${key}`, value instanceof Array ? value.join(", ") : value);
+	for(const [key, value] of [...consts].sort((a, b) => b.length - a.length)){
+		text = text.replaceAll(`$${key}`, value instanceof Array ? value.join(", ") : value.toString());
 		if(!text.includes("$")) return text;
 	}
 	return text;
 }
 
-function replaceConstsInConfig(data:SchematicData, consts: {
-	[id: string]: string | string[];
-}):SchematicData {
-	const compilerConsts = {
-		name: data.info.name,
-		version: data.info.version,
-		authors: data.info.authors,
-		...data.consts,
-		...consts
-	}
+function getSchematicConsts(data:SchematicData, extraConsts:Record<string, string | string[]>):CompilerConsts {
+	return new Map([
+		["name", data.info.name],
+		["version", data.info.version],
+		["authors", data.info.authors],
+		...Object.entries(data.consts),
+		...Object.entries(extraConsts),
+	]);
+}
+
+function replaceConstsInConfig(data:SchematicData, compilerConsts:CompilerConsts):SchematicData {
+	
 	return {
 		info: {
 			...data.info,
@@ -128,7 +156,7 @@ function replaceConstsInConfig(data:SchematicData, consts: {
 			grid: data.tiles.grid,
 			programs: data.tiles.programs,
 			blocks: Object.fromEntries(
-				Object.entries(data.tiles.blocks)
+				Object.entries(data.tiles.blocks) //TODO no longer necessary in some cases
 				.map(([name, blockData]) => ([name, {
 					...blockData,
 					id: replaceConsts(blockData.id, compilerConsts),
@@ -152,9 +180,8 @@ export function buildSchematic(rawData:string, schema:Schema, icons: {
 		jsonschem.validate(data, schema, {
 			throwAll: true
 		});
-		data = replaceConstsInConfig(data, {
-			...icons
-		});
+		const schematicConsts = getSchematicConsts(data, icons);
+		data = replaceConstsInConfig(data, schematicConsts);
 
 		const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
 		const height = data.tiles.grid.length;
@@ -166,16 +193,14 @@ export function buildSchematic(rawData:string, schema:Schema, icons: {
 		};
 		const tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
 			row.map((tile, x) => 
-				getBlockData(tile, data, x, height - reversedY - 1)
+				getBlockData(tile, data, x, height - reversedY - 1, schematicConsts)
 			)
 		);
-
-
 
 		return new Schematic(height, width, 1, tags, [], Schematic.unsortTiles(tiles));
 	} catch(err){
 		console.error("Failed to build schematic:");
-		console.error(err);
+		console.error((err as Error).toString());
 	}
 }
 

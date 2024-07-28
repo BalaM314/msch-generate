@@ -1,3 +1,5 @@
+
+
 /**Parses command line args. */
 export function parseArgs(
 	args: string[]
@@ -37,7 +39,7 @@ export function fromHexCodes(str: string):Buffer {
 	return Buffer.from(str.split(" ").map(el => parseInt(el, 16)));
 }
 
-export function err(message:string):never {
+export function crash(message:string):never {
 	throw new Error(message);
 }
 

@@ -1,3 +1,4 @@
+import * as fs from "fs";
 /**Parses command line args. */
 export function parseArgs(args) {
     let parsedArgs = {};
@@ -55,4 +56,12 @@ export function parseIcons(data) {
         }
     }
     return icons;
+}
+export function readFileOrNull(path, encoding = "utf8") {
+    if (fs.existsSync(path) && fs.lstatSync(path).isFile()) {
+        return fs.readFileSync(path, encoding);
+    }
+    else {
+        return null;
+    }
 }

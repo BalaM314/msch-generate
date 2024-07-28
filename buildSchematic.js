@@ -1,7 +1,8 @@
 import * as fs from "fs";
+import path from "path";
 import { Validator } from "jsonschema";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2 } from "msch";
-import { err } from "./funcs.js";
+import { err, readFileOrNull } from "./funcs.js";
 import { TileConfigType } from "./types.js";
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"];
 function getBlockData(name, data, blockX, blockY) {
@@ -67,14 +68,9 @@ function getBlockConfig(config, data, blockX, blockY) {
             throw new Error(`Invalid config type "${config.config.type}"`);
     }
 }
-function getProgramFromFile(path) {
+function getProgramFromFile(path, consts) {
     if (path.endsWith(".mlogx")) {
-        console.warn("Automatically compiling mlogx files before building is not yet implemented.");
-        let mlogPath = path.slice(0, -1);
-        if (!fs.existsSync(mlogPath) || !fs.lstatSync(mlogPath).isFile()) {
-            throw new Error(`Path "${mlogPath}" is not a file.`);
-        }
-        return fs.readFileSync(mlogPath, 'utf-8').split(/\r?\n/g);
+        return compileMlogxProgram(path, consts);
     }
     if (!fs.existsSync(path)) {
         throw new Error(`Path "${path}" does not exist.`);
@@ -84,6 +80,22 @@ function getProgramFromFile(path) {
     }
     return fs.readFileSync(path, 'utf-8').split(/\r?\n/g);
 }
+function compileMlogxProgram(filepath, consts) {
+    const data = fs.readFileSync(filepath, "utf-8");
+    const configData = readFileOrNull(path.join(filepath, "../config.json"));
+    let config;
+    if (configData) {
+        try {
+            config = JSON.parse(configData);
+        }
+        catch (err) { }
+    }
+    const mlogxCompilerConsts = {
+        ...config?.compilerConstants
+    };
+    return data.split(/\r?\n/g);
+}
+;
 function replaceConsts(text, consts) {
     const specifiedConsts = text.match(/(?<!\\\$\()(?<=\$\()[\w-.]+(?=\))/g);
     specifiedConsts?.forEach(key => {
