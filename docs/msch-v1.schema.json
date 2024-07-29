@@ -68,6 +68,12 @@
                 "description": {
                     "type": "string"
                 },
+                "labels": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
                 "name": {
                     "type": "string"
                 },

@@ -13,6 +13,7 @@ Usage: `msch build [schematic.json] (--output schematic.msch)`
 	"info": {
 		"name": "All Config Types",
 		"description": "testing schematic \nby $author",
+		"labels": ["test"],
 		"authors": ["BalaM314"],
 		"version": "1.0.0"
 	},

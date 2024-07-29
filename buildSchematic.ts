@@ -164,7 +164,8 @@ function replaceConstsInConfig(data:SchematicData, icons:Record<string, string>)
 		info: {
 			...data.info,
 			name: newName,
-			description: newDescription
+			description: newDescription,
+			labels: data.info.labels?.map(label => replaceConsts(label, compilerConsts))
 		},
 		tiles: {
 			grid: data.tiles.grid.map(row =>
@@ -203,6 +204,7 @@ export function buildSchematic(rawData:string, schema:Schema, icons: {
 		const tags = {
 			name: data.info.name,
 			description: data.info.description!,
+			labels: `[${data.info.labels?.map(label => JSON.stringify(label)).join(",") ?? ""}]`,
 			...data.info.tags
 		};
 		const tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>

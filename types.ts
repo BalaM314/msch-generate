@@ -5,6 +5,7 @@ export interface SchematicData {
 	info: {
 		name: string;
 		description?: string;
+		labels?: string[];
 		authors: string[];
 		version: string;
 		tags?: {

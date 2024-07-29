@@ -150,7 +150,8 @@ function replaceConstsInConfig(data, icons) {
             info: {
                 ...data.info,
                 name: newName,
-                description: newDescription
+                description: newDescription,
+                labels: data.info.labels?.map(label => replaceConsts(label, compilerConsts))
             },
             tiles: {
                 grid: data.tiles.grid.map(row => row.map(name => replaceConsts(name, compilerConsts))),
@@ -181,6 +182,7 @@ export function buildSchematic(rawData, schema, icons) {
         const tags = {
             name: data.info.name,
             description: data.info.description,
+            labels: `[${data.info.labels?.map(label => JSON.stringify(label)).join(",") ?? ""}]`,
             ...data.info.tags
         };
         const tiles = data.tiles.grid.map((row, reversedY) => row.map((tile, x) => getBlockData(tile, data, x, height - reversedY - 1, schematicConsts)));
