@@ -145,13 +145,20 @@ function getSchematicConsts(data:SchematicData, extraConsts:Record<string, strin
 	]);
 }
 
-function replaceConstsInConfig(data:SchematicData, compilerConsts:CompilerConsts):SchematicData {
-	
-	return {
+function replaceConstsInConfig(data:SchematicData, icons:Record<string, string>):[data:SchematicData, schematicConsts:CompilerConsts] {
+	const compilerConsts = getSchematicConsts(data, icons);
+	//Replace the name using the compiler consts (to put version in name)
+	//then update the compiler consts with the new name
+	//(to put name in description, or processors)
+	const newName = replaceConsts(data.info.name, compilerConsts);
+	compilerConsts.set("name", newName);
+	const newDescription = data.info.description ? replaceConsts(data.info.description, compilerConsts) : undefined;
+	if(newDescription) compilerConsts.set("description", newDescription);
+	return [{
 		info: {
 			...data.info,
-			name: replaceConsts(data.info.name, compilerConsts),
-			description: data.info.description ? replaceConsts(data.info.description, compilerConsts) : undefined
+			name: newName,
+			description: newDescription
 		},
 		tiles: {
 			grid: data.tiles.grid,
@@ -169,7 +176,7 @@ function replaceConstsInConfig(data:SchematicData, compilerConsts:CompilerConsts
 			)
 		},
 		consts: data.consts,
-	};
+	}, compilerConsts];
 }
 
 export function buildSchematic(rawData:string, schema:Schema, icons: {
@@ -177,11 +184,10 @@ export function buildSchematic(rawData:string, schema:Schema, icons: {
 }):Schematic | undefined {
 	const jsonschem = new Validator();
 	try {
-		let data:SchematicData = JSON.parse(rawData);
-		const {valid, errors} = jsonschem.validate(data, schema);
+		let unvalidatedData:unknown = JSON.parse(rawData);
+		const {valid, errors} = jsonschem.validate(unvalidatedData, schema);
 		if(!valid) throw new Error(`Schematic file is invalid: ${errors[0].stack}`);
-		const schematicConsts = getSchematicConsts(data, icons);
-		data = replaceConstsInConfig(data, schematicConsts);
+		const [data, schematicConsts] = replaceConstsInConfig(unvalidatedData as SchematicData, icons);
 
 		const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
 		const height = data.tiles.grid.length;
