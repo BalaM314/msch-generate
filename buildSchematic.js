@@ -103,12 +103,15 @@ function compileMlogxProgram(filepath, schematicConsts) {
     }
 }
 ;
+function stringifyConst(value) {
+    return value instanceof Array ? value.join(", ") : value.toString();
+}
 function replaceConsts(text, consts) {
     const specifiedConsts = text.match(/(?<!\\\$\()(?<=\$\()[\w-.]+(?=\))/g);
     specifiedConsts?.forEach(key => {
         const value = consts.get(key);
         if (value) {
-            text = text.replace(`$(${key})`, value instanceof Array ? value.join(", ") : value.toString());
+            text = text.replace(`$(${key})`, stringifyConst(value));
         }
         else {
             console.warn(`Unknown compiler const ${key}`);
@@ -116,8 +119,8 @@ function replaceConsts(text, consts) {
     });
     if (!text.includes("$"))
         return text;
-    for (const [key, value] of [...consts].sort((a, b) => b.length - a.length)) {
-        text = text.replaceAll(`$${key}`, value instanceof Array ? value.join(", ") : value.toString());
+    for (const [key, value] of consts) {
+        text = text.replaceAll(`$${key}`, stringifyConst(value));
         if (!text.includes("$"))
             return text;
     }
@@ -130,40 +133,49 @@ function getSchematicConsts(data, extraConsts) {
         ["authors", data.info.authors],
         ...Object.entries(data.consts),
         ...Object.entries(extraConsts),
-    ]);
+    ]
+        .sort(([ka, va], [kb, vb]) => kb.length - ka.length));
 }
-function replaceConstsInConfig(data, compilerConsts) {
-    return {
-        info: {
-            ...data.info,
-            name: replaceConsts(data.info.name, compilerConsts),
-            description: data.info.description ? replaceConsts(data.info.description, compilerConsts) : undefined
-        },
-        tiles: {
-            grid: data.tiles.grid,
-            programs: data.tiles.programs,
-            blocks: Object.fromEntries(Object.entries(data.tiles.blocks) //TODO no longer necessary in some cases
-                .map(([name, blockData]) => ([name, {
-                    ...blockData,
-                    id: replaceConsts(blockData.id, compilerConsts),
-                    config: blockData.config ? {
-                        type: blockData.config.type,
-                        value: replaceConsts(blockData.config.value, compilerConsts)
-                    } : undefined
-                }])))
-        },
-        consts: data.consts,
-    };
+function replaceConstsInConfig(data, icons) {
+    const compilerConsts = getSchematicConsts(data, icons);
+    //Replace the name using the compiler consts (to put version in name)
+    //then update the compiler consts with the new name
+    //(to put name in description, or processors)
+    const newName = replaceConsts(data.info.name, compilerConsts);
+    compilerConsts.set("name", newName);
+    const newDescription = data.info.description ? replaceConsts(data.info.description, compilerConsts) : undefined;
+    if (newDescription)
+        compilerConsts.set("description", newDescription);
+    return [{
+            info: {
+                ...data.info,
+                name: newName,
+                description: newDescription
+            },
+            tiles: {
+                grid: data.tiles.grid.map(row => row.map(name => replaceConsts(name, compilerConsts))),
+                programs: data.tiles.programs,
+                blocks: Object.fromEntries(Object.entries(data.tiles.blocks) //TODO no longer necessary in some cases
+                    .map(([name, blockData]) => ([name, {
+                        ...blockData,
+                        id: replaceConsts(blockData.id, compilerConsts),
+                        config: blockData.config ? {
+                            type: blockData.config.type,
+                            value: replaceConsts(blockData.config.value, compilerConsts)
+                        } : undefined
+                    }])))
+            },
+            consts: data.consts,
+        }, compilerConsts];
 }
 export function buildSchematic(rawData, schema, icons) {
     const jsonschem = new Validator();
     try {
-        let data = JSON.parse(rawData);
-        const { valid, errors } = jsonschem.validate(data, schema);
+        let unvalidatedData = JSON.parse(rawData);
+        const { valid, errors } = jsonschem.validate(unvalidatedData, schema);
         if (!valid)
             throw new Error(`Schematic file is invalid: ${errors[0].stack}`);
-        const schematicConsts = getSchematicConsts(data, icons);
-        data = replaceConstsInConfig(data, schematicConsts);
+        const [data, schematicConsts] = replaceConstsInConfig(unvalidatedData, icons);
         const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
         const height = data.tiles.grid.length;
         const tags = {

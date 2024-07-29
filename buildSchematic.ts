@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import path from "path";
 import { Schema, Validator } from "jsonschema";
-import { compileMlogxToMlog, CompilerConsts, getState, getLocalState, getSettings, CompilerError } from "mlogx";
+import { compileMlogxToMlog, CompilerConsts, getState, getLocalState, getSettings, CompilerError, CompilerConst } from "mlogx";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2, Link } from "msch";
 import { crash } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
@@ -117,32 +117,38 @@ function compileMlogxProgram(filepath:string, schematicConsts:CompilerConsts):st
 
 };
 
+function stringifyConst(value:CompilerConst){
+	return value instanceof Array ? value.join(", ") : value.toString();
+}
 function replaceConsts(text:string, consts:CompilerConsts):string {
 	const specifiedConsts = text.match(/(?<!\\\$\()(?<=\$\()[\w-.]+(?=\))/g);
 	specifiedConsts?.forEach(key => {
 		const value = consts.get(key);
 		if(value){
-			text = text.replace(`$(${key})`, value instanceof Array ? value.join(", ") : value.toString());
+			text = text.replace(`$(${key})`, stringifyConst(value));
 		} else {
 			console.warn(`Unknown compiler const ${key}`);
 		}
 	});
 	if(!text.includes("$")) return text;
-	for(const [key, value] of [...consts].sort((a, b) => b.length - a.length)){
-		text = text.replaceAll(`$${key}`, value instanceof Array ? value.join(", ") : value.toString());
+	for(const [key, value] of consts){
+		text = text.replaceAll(`$${key}`, stringifyConst(value));
 		if(!text.includes("$")) return text;
 	}
 	return text;
 }
 
 function getSchematicConsts(data:SchematicData, extraConsts:Record<string, string | string[]>):CompilerConsts {
-	return new Map([
-		["name", data.info.name],
-		["version", data.info.version],
-		["authors", data.info.authors],
-		...Object.entries(data.consts),
-		...Object.entries(extraConsts),
-	]);
+	return new Map(
+		([
+			["name", data.info.name],
+			["version", data.info.version],
+			["authors", data.info.authors],
+			...Object.entries(data.consts),
+			...Object.entries(extraConsts),
+		] satisfies [string, string | string[]][])
+		.sort(([ka, va], [kb, vb]) => kb.length - ka.length)
+	);
 }
 
 function replaceConstsInConfig(data:SchematicData, icons:Record<string, string>):[data:SchematicData, schematicConsts:CompilerConsts] {
@@ -161,7 +167,9 @@ function replaceConstsInConfig(data:SchematicData, icons:Record<string, string>)
 			description: newDescription
 		},
 		tiles: {
-			grid: data.tiles.grid,
+			grid: data.tiles.grid.map(row =>
+				row.map(name => replaceConsts(name, compilerConsts))
+			),
 			programs: data.tiles.programs,
 			blocks: Object.fromEntries(
 				Object.entries(data.tiles.blocks) //TODO no longer necessary in some cases
