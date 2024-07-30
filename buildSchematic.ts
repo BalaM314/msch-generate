@@ -195,16 +195,17 @@ export function buildSchematic(rawData:string, schema:Schema, icons: {
 	try {
 		let unvalidatedData:unknown = JSON.parse(rawData);
 		const {valid, errors} = jsonschem.validate(unvalidatedData, schema);
-		if(!valid) throw new Error(`Schematic file is invalid: ${errors[0].stack}`);
+		if(!valid) crash(`Schematic file is invalid: ${errors[0].stack}`);
 		const [data, schematicConsts] = replaceConstsInConfig(unvalidatedData as SchematicData, icons);
 
 		const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
 		const height = data.tiles.grid.length;
 		
+		if(data.info.tags && "labels" in data.info.tags && data.info.labels) crash(`Schematic file can only have data.info.labels or data.info.tags.labels, not both`);
 		const tags = {
 			name: data.info.name,
 			description: data.info.description!,
-			labels: `[${data.info.labels?.map(label => JSON.stringify(label)).join(",") ?? ""}]`,
+			labels: JSON.stringify(data.info.labels) ?? `[]`,
 			...data.info.tags
 		};
 		const tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
