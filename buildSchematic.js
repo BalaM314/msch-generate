@@ -124,13 +124,13 @@ function replaceConsts(text, consts) {
     return text;
 }
 function getSchematicConsts(data, extraConsts) {
-    return new Map([
+    return new Map(([
         ["name", data.info.name],
         ["version", data.info.version],
         ["authors", data.info.authors],
         ...Object.entries(data.consts ?? {}),
         ...Object.entries(extraConsts),
-    ]
+    ])
         .sort(([ka, va], [kb, vb]) => kb.length - ka.length));
 }
 function replaceConstsInConfig(data, icons) {

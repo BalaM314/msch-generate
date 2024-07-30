@@ -15,16 +15,16 @@ import { parseIcons, tryRunOr } from "./funcs.js";
 const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
 mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
     let schem = Schematic.blank;
+    schem.tags["description"] = "Made with https://github.com/BalaM314/msch-generate";
     if (opts.namedArgs["read"]) {
-        try {
-            schem = Schematic.from(fs.readFileSync(opts.namedArgs["read"]));
-        }
-        catch (err) {
-            console.error("Invalid schematic.", err);
+        const result = Schematic.read(fs.readFileSync(opts.namedArgs["read"]));
+        if (typeof result == "string") {
+            console.error("Invalid schematic.", result);
             return 1;
         }
+        schem = result;
         schem.display("verbose" in opts.namedArgs);
-        schem.tags["description"] = "Made with https://github.com/BalaM314/msch";
+        schem.tags["description"] ??= "Made with https://github.com/BalaM314/msch-generate";
     }
     if ("interactive" in opts.namedArgs) {
         console.log("Interactive JavaScript shell, type .exit or Ctrl+C to exit.");
