@@ -45,7 +45,7 @@ function getBlockConfig(config, data, blockX, blockY, schematicConsts) {
         case TileConfigType.string:
             return new BlockConfig(BlockConfigType.string, config.config.value);
         case TileConfigType.program:
-            if (!(config.config.value in data.tiles.programs)) {
+            if (!(data.tiles.programs && config.config.value in data.tiles.programs)) {
                 throw new Error(`Unknown program "${config.config.value}"`);
             }
             let program = data.tiles.programs[config.config.value];
@@ -131,7 +131,7 @@ function getSchematicConsts(data, extraConsts) {
         ["name", data.info.name],
         ["version", data.info.version],
         ["authors", data.info.authors],
-        ...Object.entries(data.consts),
+        ...Object.entries(data.consts ?? {}),
         ...Object.entries(extraConsts),
     ]
         .sort(([ka, va], [kb, vb]) => kb.length - ka.length));

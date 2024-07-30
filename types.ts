@@ -20,7 +20,7 @@ export interface SchematicData {
 			[name: string]: SchematicBlockConfig;
 		};
 		/**A list of mlog programs. */
-		programs: {
+		programs?: {
 			/**If an array, interpreted as a program, otherwise interpreted as a path to a program. */
 			[name: string]: string[] | string;
 		}
@@ -29,7 +29,7 @@ export interface SchematicData {
 	 * A list of constants that will replace text in your schematic.
 	 * Example: the line `"foo": "bar"` will cause any text that says "$foo" to be replaced with "bar".
 	 */
-	consts: {
+	consts?: {
 		[name: string]: string;
 	}
 }
