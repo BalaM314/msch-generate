@@ -42,15 +42,15 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 		return new BlockConfig(BlockConfigType.pointarray, getLinks(config, data, blockX, blockY).map(link => new Point2(link.x, link.y)))
 	}
 	switch(config.config.type){
-		case TileConfigType.item:
+		case "item":
 			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? crash(`Unknown item ${config.config.value}`)]);
-		case TileConfigType.boolean:
+		case "boolean":
 			return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
-		case TileConfigType.point:
+		case "point":
 			return new BlockConfig(BlockConfigType.point, new Point2(+config.config.value.split(/, ?/)[0], +config.config.value.split(/, ?/)[1]));
-		case TileConfigType.string:
+		case "string":
 			return new BlockConfig(BlockConfigType.string, config.config.value);
-		case TileConfigType.program:
+		case "program":
 			if(!(data.tiles.programs && config.config.value in data.tiles.programs)){
 				throw new Error(`Unknown program "${config.config.value}"`);
 			}

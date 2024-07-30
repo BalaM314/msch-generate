@@ -4,7 +4,6 @@ import { Validator } from "jsonschema";
 import { compileMlogxToMlog, getState, getLocalState, getSettings, CompilerError } from "mlogx";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2 } from "msch";
 import { crash } from "./funcs.js";
-import { TileConfigType } from "./types.js";
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"];
 function getBlockData(name, data, blockX, blockY, schematicConsts) {
     if (name == "")
@@ -36,15 +35,15 @@ function getBlockConfig(config, data, blockX, blockY, schematicConsts) {
         return new BlockConfig(BlockConfigType.pointarray, getLinks(config, data, blockX, blockY).map(link => new Point2(link.x, link.y)));
     }
     switch (config.config.type) {
-        case TileConfigType.item:
+        case "item":
             return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value] ?? crash(`Unknown item ${config.config.value}`)]);
-        case TileConfigType.boolean:
+        case "boolean":
             return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
-        case TileConfigType.point:
+        case "point":
             return new BlockConfig(BlockConfigType.point, new Point2(+config.config.value.split(/, ?/)[0], +config.config.value.split(/, ?/)[1]));
-        case TileConfigType.string:
+        case "string":
             return new BlockConfig(BlockConfigType.string, config.config.value);
-        case TileConfigType.program:
+        case "program":
             if (!(data.tiles.programs && config.config.value in data.tiles.programs)) {
                 throw new Error(`Unknown program "${config.config.value}"`);
             }
