@@ -3,7 +3,7 @@ import path from "path";
 import { Schema, Validator } from "jsonschema";
 import { compileMlogxToMlog, CompilerConsts, getState, getLocalState, getSettings, CompilerError, CompilerConst } from "mlogx";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2, Link } from "msch";
-import { crash } from "./funcs.js";
+import { fail } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
 import { Options } from "cli-app";
 
@@ -11,7 +11,7 @@ const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tow
 
 function getBlockData(name:string, data:SchematicData, blockX:number, blockY:number, schematicConsts:CompilerConsts):Tile | null {
 	if(name == "") return null;
-	let config = data.tiles.blocks[name] ?? crash(`No data for block \`${name}\`.`);
+	let config = data.tiles.blocks[name] ?? fail(`No data for block \`${name}\`.`);
 	return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY, schematicConsts), config.rotation ?? 0);
 };
 
@@ -37,13 +37,13 @@ function getLinks(config:SchematicBlockConfig, data:SchematicData, blockX:number
 
 function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:number, blockY:number, schematicConsts:CompilerConsts):BlockConfig {
 	if(!config.config) return BlockConfig.null;
-	if(!data) throw new Error("data is undefined");
+	if(!data) fail("data is undefined");
 	if(config.links && powerNodes.includes(config.id)){
 		return new BlockConfig(BlockConfigType.pointarray, getLinks(config, data, blockX, blockY).map(link => new Point2(link.x, link.y)))
 	}
 	switch(config.config.type){
 		case "item":
-			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? crash(`Unknown item ${config.config.value}`)]);
+			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? fail(`Unknown item ${config.config.value}`)]);
 		case "boolean":
 			return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
 		case "point":
@@ -52,7 +52,7 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 			return new BlockConfig(BlockConfigType.string, config.config.value);
 		case "program":
 			if(!(data.tiles.programs && config.config.value in data.tiles.programs)){
-				throw new Error(`Unknown program "${config.config.value}"`);
+				fail(`Unknown program "${config.config.value}"`);
 			}
 			let program = data.tiles.programs[config.config.value];
 			let code:string[];
@@ -61,14 +61,14 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 			} else if(program instanceof Array){
 				code = program;
 			} else {
-				throw new Error(`Program "${program}" is of invalid type. (${typeof program}) Valid types: string[], string`);
+				fail(`Program "${program}" is of invalid type. (${typeof program}) Valid types: string[], string`);
 			}
 			return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
 				links: getLinks(config, data, blockX, blockY),
 				code
 			}));
 		default:
-			throw new Error(`Invalid config type "${config.config.type}"`);
+			fail(`Invalid config type "${config.config.type}"`);
 	}
 }
 
@@ -78,10 +78,10 @@ function getProgramFromFile(path:string, schematicConsts:CompilerConsts):string[
 		return compileMlogxProgram(path, schematicConsts);
 	}
 	if(!fs.existsSync(path)){
-		throw new Error(`Path "${path}" does not exist.`);
+		fail(`Path "${path}" does not exist.`);
 	}
 	if(!fs.lstatSync(path).isFile()){
-		throw new Error(`Path "${path}" is not a file.`);
+		fail(`Path "${path}" is not a file.`);
 	}
 	return fs.readFileSync(path, 'utf-8').split(/\r?\n/g);
 
@@ -188,36 +188,29 @@ function replaceConstsInConfig(data:SchematicData, icons:Record<string, string>)
 	}, compilerConsts];
 }
 
-export function buildSchematic(rawData:string, schema:Schema, icons: {
-	[id: string]: string;
-}):Schematic | undefined {
+export function buildSchematic(rawData:string, schema:Schema, icons: Record<string, string>):Schematic {
 	const jsonschem = new Validator();
-	try {
-		let unvalidatedData:unknown = JSON.parse(rawData);
-		const {valid, errors} = jsonschem.validate(unvalidatedData, schema);
-		if(!valid) crash(`Schematic file is invalid: ${errors[0].stack}`);
-		const [data, schematicConsts] = replaceConstsInConfig(unvalidatedData as SchematicData, icons);
+	let unvalidatedData:unknown = JSON.parse(rawData);
+	const {valid, errors} = jsonschem.validate(unvalidatedData, schema);
+	if(!valid) fail(`Schematic file is invalid: ${errors[0].stack}`);
+	const [data, schematicConsts] = replaceConstsInConfig(unvalidatedData as SchematicData, icons);
 
-		const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
-		const height = data.tiles.grid.length;
-		
-		if(data.info.tags && "labels" in data.info.tags && data.info.labels) crash(`Schematic file can only have data.info.labels or data.info.tags.labels, not both`);
-		const tags = {
-			name: data.info.name,
-			description: data.info.description!,
-			labels: JSON.stringify(data.info.labels) ?? `[]`,
-			...data.info.tags
-		};
-		const tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
-			row.map((tile, x) => 
-				getBlockData(tile, data, x, height - reversedY - 1, schematicConsts)
-			)
-		);
+	const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
+	const height = data.tiles.grid.length;
+	
+	if(data.info.tags && "labels" in data.info.tags && data.info.labels) fail(`Schematic file can only have data.info.labels or data.info.tags.labels, not both`);
+	const tags = {
+		name: data.info.name,
+		description: data.info.description!,
+		labels: JSON.stringify(data.info.labels) ?? `[]`,
+		...data.info.tags
+	};
+	const tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
+		row.map((tile, x) => 
+			getBlockData(tile, data, x, height - reversedY - 1, schematicConsts)
+		)
+	);
 
-		return new Schematic(height, width, 1, tags, [], Schematic.unsortTiles(tiles));
-	} catch(err){
-		console.error("Failed to build schematic:");
-		console.error((err as Error).toString());
-	}
+	return new Schematic(height, width, 1, tags, [], Schematic.unsortTiles(tiles));
 }
 

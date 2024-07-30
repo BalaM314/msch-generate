@@ -11,7 +11,7 @@ import * as fs from "fs";
 import { Schematic } from "msch"; // tslint:disable-line
 import path from "path";
 import { buildSchematic } from "./buildSchematic.js";
-import { parseIcons } from "./funcs.js";
+import { parseIcons, tryRunOr } from "./funcs.js";
 const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
 mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
     let schem = Schematic.blank;
@@ -139,18 +139,23 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
     }
     const icons = parseIcons(fs.readFileSync(iconsPath, 'utf-8').split(/\r?\n/g));
     console.log("Building schematic...");
+    //Use the schematic file as the working directory, to correctly resolve relative paths
     const cwd = process.cwd();
     process.chdir(path.join(target, ".."));
-    const schem = buildSchematic(data, schema, icons);
-    process.chdir(cwd);
-    if (schem) {
+    tryRunOr(() => {
+        const schem = buildSchematic(data, schema, icons);
+        process.chdir(cwd);
         console.log(`Built schematic.`);
         schem.display(false);
         const outputPath = opts.namedArgs["output"] ?? opts.positionalArgs[0].replace(/(.json)?$/, ".msch");
         console.log(`Writing to ${outputPath}...`);
         fs.writeFileSync(outputPath, schem.write().toBuffer());
         console.log("Done!");
-    }
+    }, e => {
+        console.error(e.message);
+        console.error(`Build failed.`);
+        process.exit(1);
+    });
 }, true, {
     namedArgs: {
         output: {

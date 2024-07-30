@@ -35,9 +35,6 @@ export function toHexCodes(buf) {
 export function fromHexCodes(str) {
     return Buffer.from(str.split(" ").map(el => parseInt(el, 16)));
 }
-export function crash(message) {
-    throw new Error(message);
-}
 /**Parses icons out of the data in the icons.properties file from the Mindustry source code. */
 export function parseIcons(data) {
     const icons = {};
@@ -55,4 +52,33 @@ export function parseIcons(data) {
         }
     }
     return icons;
+}
+class Message extends Error {
+    constructor() {
+        super(...arguments);
+        this.name = "Message";
+    }
+}
+export function fail(message) {
+    throw new Message(message);
+}
+export function crash(message) {
+    throw new Error(message);
+}
+export function impossible() {
+    throw new Error(`this shouldn't be possible...`);
+}
+export function tryRunOr(callback, errorHandler) {
+    try {
+        callback();
+        return true;
+    }
+    catch (err) {
+        if (err instanceof Message) {
+            errorHandler(err);
+            return false;
+        }
+        else
+            throw err;
+    }
 }
