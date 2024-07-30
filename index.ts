@@ -145,8 +145,7 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
 		fs.writeFileSync(outputPath, schem.write().toBuffer());
 		console.log("Done!");
 	}, e => {
-		console.error(e.message);
-		console.error(`Build failed.`);
+		console.error(`Error: ${e.message}\nBuild failed.`);
 		process.exit(1);
 	});
 

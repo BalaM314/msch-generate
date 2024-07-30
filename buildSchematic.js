@@ -3,51 +3,50 @@ import path from "path";
 import { Validator } from "jsonschema";
 import { compileMlogxToMlog, getState, getLocalState, getSettings, CompilerError } from "mlogx";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2 } from "msch";
-import { fail } from "./funcs.js";
+import { fail, impossible } from "./funcs.js";
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"];
 function getBlockData(name, data, blockX, blockY, schematicConsts) {
     if (name == "")
         return null;
-    let config = data.tiles.blocks[name] ?? fail(`No data for block \`${name}\`.`);
+    const config = data.tiles.blocks[name] ?? fail(`Missing configuration data for block "${name}".`);
     return new Tile(config.id, blockX, blockY, getBlockConfig(config, data, blockX, blockY, schematicConsts), config.rotation ?? 0);
 }
 ;
 function getLinks(config, data, blockX, blockY) {
     if (!config.links)
         return [];
-    return config.links.map(link => data.tiles.grid
-        .slice().reverse() //Reverse the rows so that row 0 is at y position 0 instead of (height - y - 1)
-        .map((row, y) => row
+    //Reverse the rows so that row 0 is at y position 0 instead of (height - y - 1)
+    const reversedGrid = data.tiles.grid.slice().reverse();
+    return config.links.map(link => reversedGrid.map((row, y) => row
         .map((block, x) => [block, x])
         .filter(([block, x]) => block == link)
         .map(([block, x]) => ({
         x: x - blockX,
         y: y - blockY,
-        name: `!!` //Allow the game to determine it automatically
-    }))).reduce((accumulator, val) => accumulator.concat(val), [])).reduce((accumulator, val) => accumulator.concat(val), []);
+        name: `!!` //!! is invalid, so the game will determine the correct link name
+    })))).flat(2);
 }
 function getBlockConfig(config, data, blockX, blockY, schematicConsts) {
-    if (!config.config)
-        return BlockConfig.null;
-    if (!data)
-        fail("data is undefined");
     if (config.links && powerNodes.includes(config.id)) {
+        //Special case for power nodes
         return new BlockConfig(BlockConfigType.pointarray, getLinks(config, data, blockX, blockY).map(link => new Point2(link.x, link.y)));
     }
+    if (!config.config)
+        return BlockConfig.null;
     switch (config.config.type) {
         case "item":
             return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value] ?? fail(`Unknown item ${config.config.value}`)]);
         case "boolean":
             return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
         case "point":
-            return new BlockConfig(BlockConfigType.point, new Point2(+config.config.value.split(/, ?/)[0], +config.config.value.split(/, ?/)[1]));
+            const [x, y, ...rest] = config.config.value.split(/, ?/);
+            if (!x || !y || rest.length > 0)
+                fail(`Invalid point config "${config.config.value}", should be of the form "5,6"`);
+            return new BlockConfig(BlockConfigType.point, new Point2(+x, +y));
         case "string":
             return new BlockConfig(BlockConfigType.string, config.config.value);
         case "program":
-            if (!(data.tiles.programs && config.config.value in data.tiles.programs)) {
-                fail(`Unknown program "${config.config.value}"`);
-            }
-            let program = data.tiles.programs[config.config.value];
+            const program = data.tiles.programs?.[config.config.value] ?? fail(`Unknown program "${config.config.value}"`);
             let code;
             if (typeof program == "string") {
                 code = getProgramFromFile(program, schematicConsts);
@@ -55,9 +54,8 @@ function getBlockConfig(config, data, blockX, blockY, schematicConsts) {
             else if (program instanceof Array) {
                 code = program;
             }
-            else {
-                fail(`Program "${program}" is of invalid type. (${typeof program}) Valid types: string[], string`);
-            }
+            else
+                impossible();
             return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
                 links: getLinks(config, data, blockX, blockY),
                 code
@@ -68,7 +66,7 @@ function getBlockConfig(config, data, blockX, blockY, schematicConsts) {
 }
 function getProgramFromFile(path, schematicConsts) {
     if (path.endsWith(".mlogx")) {
-        console.log(`Compiling prorgam ${path}`);
+        console.log(`Compiling program ${path}`);
         return compileMlogxProgram(path, schematicConsts);
     }
     if (!fs.existsSync(path)) {
@@ -170,7 +168,13 @@ function replaceConstsInConfig(data, icons) {
 }
 export function buildSchematic(rawData, schema, icons) {
     const jsonschem = new Validator();
-    let unvalidatedData = JSON.parse(rawData);
+    let unvalidatedData;
+    try {
+        unvalidatedData = JSON.parse(rawData);
+    }
+    catch (err) {
+        fail(`Schematic file contains invalid JSON: ${err.message}`);
+    }
     const { valid, errors } = jsonschem.validate(unvalidatedData, schema);
     if (!valid)
         fail(`Schematic file is invalid: ${errors[0].stack}`);

@@ -28,7 +28,7 @@
                     "type": "string"
                 },
                 "links": {
-                    "description": "List of links. Unlike in a regular schematic, this is for processor and power node links.",
+                    "description": "List of links. Unlike in a regular schematic, this is for processor and power node links. If multiple blocks have the same name, this will link to all blocks with that name.",
                     "items": {
                         "type": "string"
                     },
