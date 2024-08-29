@@ -179,7 +179,7 @@ export function buildSchematic(rawData, schema, icons) {
     if (!valid)
         fail(`Schematic file is invalid: ${errors[0].stack}`);
     const [data, schematicConsts] = replaceConstsInConfig(unvalidatedData, icons);
-    const width = data.tiles.grid.map(row => row.length).sort().at(-1) ?? 0;
+    const width = Math.max(0, ...data.tiles.grid.map(row => row.length));
     const height = data.tiles.grid.length;
     if (data.info.tags && "labels" in data.info.tags && data.info.labels)
         fail(`Schematic file can only have data.info.labels or data.info.tags.labels, not both`);
