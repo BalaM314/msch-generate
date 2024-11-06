@@ -2,7 +2,7 @@ import * as fs from "fs";
 import path from "path";
 import { Validator } from "jsonschema";
 import { compileMlogxToMlog, getState, getLocalState, getSettings, CompilerError } from "mlogx";
-import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2 } from "msch";
+import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Liquid, Unit, Block, Point2 } from "msch";
 import { fail, impossible } from "./funcs.js";
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"];
 function getBlockData(name, data, blockX, blockY, schematicConsts) {
@@ -36,6 +36,12 @@ function getBlockConfig(config, data, blockX, blockY, schematicConsts) {
     switch (config.config.type) {
         case "item":
             return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value] ?? fail(`Unknown item ${config.config.value}`)]);
+        case "liquid":
+            return new BlockConfig(BlockConfigType.content, [4, Liquid[config.config.value] ?? fail(`Unknown liquid ${config.config.value}`)]);
+        case "unit":
+            return new BlockConfig(BlockConfigType.content, [6, Unit[config.config.value] ?? fail(`Unknown unit ${config.config.value}`)]);
+        case "block":
+            return new BlockConfig(BlockConfigType.content, [1, Block[config.config.value] ?? fail(`Unknown block ${config.config.value}`)]);
         case "boolean":
             return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
         case "point":

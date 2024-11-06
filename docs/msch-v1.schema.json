@@ -10,6 +10,9 @@
                             "enum": [
                                 "boolean",
                                 "item",
+                                "liquid",
+                                "unit",
+                                "block",
                                 "point",
                                 "program",
                                 "string"
