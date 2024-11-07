@@ -150,8 +150,9 @@ function getSchematicConsts(data:SchematicData, extraConsts:Record<string, strin
 			["authors", data.info.authors],
 			...Object.entries(data.consts ?? {}),
 			...Object.entries(extraConsts),
-		] satisfies [string, string | string[]][])
-		.sort(([ka, va], [kb, vb]) => kb.length - ka.length)
+		] satisfies [string, string | string[]][]).sort(
+			([ka, va], [kb, vb]) => kb.length - ka.length
+		)
 	);
 }
 
