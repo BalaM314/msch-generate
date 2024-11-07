@@ -10,7 +10,7 @@ importers:
     dependencies:
       cli-app:
         specifier: github:BalaM314/cli-app
-        version: https://codeload.github.com/BalaM314/cli-app/tar.gz/5334837f8cd897526ed42b75514ab73475ba2b17
+        version: https://codeload.github.com/BalaM314/cli-app/tar.gz/153ebb74fed32c9bd10ca64788a580e112cc2afb
       jsonschema:
         specifier: ^1.4.1
         version: 1.4.1
@@ -133,12 +133,8 @@ packages:
     resolution: {integrity: sha512-ree3Gqw/nazQAPuJJEy+avdl7QfZMcUvmHIKgEZkGL+xOBzRvup5Hxo6LHuMceSxOabuJLJm5Yp/92R9eMmMvA==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
-  cli-app@https://codeload.github.com/BalaM314/cli-app/tar.gz/5334837f8cd897526ed42b75514ab73475ba2b17:
-    resolution: {tarball: https://codeload.github.com/BalaM314/cli-app/tar.gz/5334837f8cd897526ed42b75514ab73475ba2b17}
-    version: 2.2.0
-
-  cli-app@https://codeload.github.com/BalaM314/cli-app/tar.gz/d1c1c4e8777074254e371c6d68be81c5bfe4a172:
-    resolution: {tarball: https://codeload.github.com/BalaM314/cli-app/tar.gz/d1c1c4e8777074254e371c6d68be81c5bfe4a172}
+  cli-app@https://codeload.github.com/BalaM314/cli-app/tar.gz/153ebb74fed32c9bd10ca64788a580e112cc2afb:
+    resolution: {tarball: https://codeload.github.com/BalaM314/cli-app/tar.gz/153ebb74fed32c9bd10ca64788a580e112cc2afb}
     version: 2.3.0
 
   cliui@8.0.1:
@@ -476,9 +472,7 @@ snapshots:
 
   chalk@5.2.0: {}
 
-  cli-app@https://codeload.github.com/BalaM314/cli-app/tar.gz/5334837f8cd897526ed42b75514ab73475ba2b17: {}
-
-  cli-app@https://codeload.github.com/BalaM314/cli-app/tar.gz/d1c1c4e8777074254e371c6d68be81c5bfe4a172: {}
+  cli-app@https://codeload.github.com/BalaM314/cli-app/tar.gz/153ebb74fed32c9bd10ca64788a580e112cc2afb: {}
 
   cliui@8.0.1:
     dependencies:
@@ -588,7 +582,7 @@ snapshots:
   mlogx@2.4.1:
     dependencies:
       chalk: 5.2.0
-      cli-app: https://codeload.github.com/BalaM314/cli-app/tar.gz/d1c1c4e8777074254e371c6d68be81c5bfe4a172
+      cli-app: https://codeload.github.com/BalaM314/cli-app/tar.gz/153ebb74fed32c9bd10ca64788a580e112cc2afb
       deepmerge: 4.3.1
       yup: 0.32.11
 

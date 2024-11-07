@@ -118,14 +118,14 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
         return;
     }
     const data = fs.readFileSync(target, "utf-8");
-    const schemaPath = path.join(app.sourceDirectory, "docs/msch-v1.schema.json");
-    const iconsPath = path.join(app.sourceDirectory, "cache/icons.properties");
+    const schemaPath = path.join(app.sourceDirectory, "..", "docs/msch-v1.schema.json");
+    const iconsPath = path.join(app.sourceDirectory, "..", "cache/icons.properties");
     let schema;
     if (!fs.existsSync(schemaPath)) {
-        throw new Error("JSON schema file does not exist. This was likely caused by an improper or corrupt installation.");
+        throw new Error(`JSON schema file does not exist. This was likely caused by an improper or corrupt installation. (Expected location: ${schemaPath})`);
     }
     if (!fs.existsSync(iconsPath)) {
-        throw new Error("Icons file does not exist. This was likely caused by an improper or corrupt installation.");
+        throw new Error(`Icons file does not exist. This was likely caused by an improper or corrupt installation. (Expected location: ${iconsPath})`);
     }
     try {
         schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
