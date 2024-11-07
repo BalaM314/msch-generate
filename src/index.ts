@@ -98,10 +98,6 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 			needsValue: false,
 			aliases: ["v"],
 		},
-		output: {
-			description: "The path to the output file.",
-			aliases: ["o"],
-		},
 		interactive: {
 			description: "Starts a shell, allowing you to edit the schematic by typing JS code.",
 			needsValue: false,

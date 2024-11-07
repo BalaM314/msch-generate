@@ -1,0 +1,122 @@
+{
+	"$schema": "https://raw.githubusercontent.com/BalaM314/msch-generate/main/docs/msch-v1.schema.json",
+	"info": {
+		"name": "[#FF]Overkill[] RC v2.0.3",
+		"description": "Because one hyper processor definitely wasn't enough.\nAllows you to remote control a swarm of air units loaded with explosives and yeet the enemy defenses.\n\nv$version",
+		"authors": ["BalaM314"],
+		"version": "2.0.3"
+	},
+	"tiles": {
+		"grid": [
+			["", "", "", "", "", "mainMessage", "arc", "", "", "", "", ""],
+			["", "moverProc", "", "watex", "", "", "", "watex", "", "", "moverProc", ""],
+			["", "", "", "", "", "controlProc", "", "", "", "", "", ""],
+			["", "", "", "cryoMixer", "", "outputBridge", "invSorter", "cryoMixer", "", "", "", ""],
+			["", "moverProc", "", "", "", "cell", "node", "", "", "", "moverProc", ""],
+			["", "", "", "watex", "", "", "", "watex", "", "", "", ""],
+			["switch5", "switch4", "switch3", "switch2", "switch1", "overdrive", "", "feederProc", "", "", "bombingItemSorter", "unitSorter"],
+			["message5", "message4", "message3", "message2", "message1", "inputBridge", "invSorter", "tiSorter", "repair", "", "message6", "message7"]
+		],
+		"blocks": {
+			"moverProc": {
+				"id": "hyper-processor",
+				"config": {
+					"type": "program",
+					"value": "unitMover"
+				},
+				"links": [
+					"bombingItemSorter", "cell"
+				]
+			},
+			"controlProc": {
+				"id": "logic-processor",
+				"config": {
+					"type": "program",
+					"value": "controller"
+				},
+				"links": [
+					"cell", "arc", "switch1", "switch2", "switch3", "switch4", "switch5", "unitSorter", "bombingItemSorter"
+				]
+			},
+			"feederProc": {
+				"id": "micro-processor",
+				"config": {
+					"type": "program",
+					"value": "feeder"
+				},
+				"links": [
+					"overdrive",
+					"inputBridge"
+				]
+			},
+			"watex": { "id": "water-extractor" },
+			"cryoMixer": { "id": "cryofluid-mixer" },
+			"unitSorter": { "id": "sorter" },
+			"bombingItemSorter": { "id": "inverted-sorter", "config": {
+				"type": "item", "value": "thorium"
+			} },
+			"node": { "id": "power-node", "links": [
+				
+			] },
+			"arc": { "id": "arc" },
+			"mainMessage": { "id": "message", "config": {
+				"type": "string", "value": "[red]OVERKILL[] RC\n[slate]by [#3141FF]BalaM314[], [white]Someone's[] [darkgray]Shade[], [green]SBytes[][]\nVersion $version\n\nAdditional options in the logic proc."
+			} },
+			"invSorter": { "id": "inverted-sorter" },
+			"overdrive": { "id": "overdrive-projector" },
+			"cell": { "id": "memory-cell" },
+			"repair": { "id": "repair-turret" },
+			"inputBridge": { "id": "bridge-conveyor", "config": {
+				"type": "point", "value": "0,4"
+			} },
+			"outputBridge": { "id": "bridge-conveyor" },
+			"message1": { "id": "message", "config": {
+				"type": "string", "value": "[green]Overrange mode[]\nUnits shoot to edge of their range when cursor pos is out of range, instead of shooting randomly. [orange]Significantly increases latency.[]"
+			} },
+			"message2": { "id": "message", "config": {
+				"type": "string", "value": "[green]Heal units when idle[]"
+			} },
+			"message3": { "id": "message", "config": {
+				"type": "string", "value": "[green]Longrange mode:[]\nIn longrange mode, hold click to move the units target movement position and release click to move shoot position."
+			} },
+			"message4": { "id": "message", "config": {
+				"type": "string", "value": "[green]Load units[]\nLoads units with the selected bombing item.\n[orange]Increases latency. May drain core resources.[]"
+			} },
+			"message5": { "id": "message", "config": {
+				"type": "string", "value": "[green]Enable[]"
+			} },
+			"message6": { "id": "message", "config": {
+				"type": "string", "value": "[green]Use the inverted sorter to specify the item loaded into units.[]\nRecommended: $_blast_compound $_pyratite $_coal $_spore_pod"
+			} },
+			"message7": { "id": "message", "config": {
+				"type": "string", "value": "[green]Use the sorter to specify the unit type.[]\n"
+			} },
+			"switch1": { "id": "switch", "config": {
+				"type": "boolean", "value": "true"
+			} },
+			"switch2": { "id": "switch", "config": {
+				"type": "boolean", "value": "true"
+			} },
+			"switch3": { "id": "switch", "config": {
+				"type": "boolean", "value": "false"
+			} },
+			"switch4": { "id": "switch", "config": {
+				"type": "boolean", "value": "true"
+			} },
+			"switch5": { "id": "switch", "config": {
+				"type": "boolean", "value": "true"
+			} },
+			"tiSorter": { "id": "inverted-sorter", "config": {
+				"type": "item", "value": "titanium"
+			} }
+		},
+		"programs": {
+			"unitMover": "rc_move.mlogx",
+			"controller": "rc_control.mlogx",
+			"feeder": "feeder.mlogx"
+		}
+	},
+	"consts": {
+		
+	}
+}
