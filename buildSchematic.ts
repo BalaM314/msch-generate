@@ -2,8 +2,8 @@ import * as fs from "fs";
 import path from "path";
 import { Schema, Validator } from "jsonschema";
 import { compileMlogxToMlog, CompilerConsts, getState, getLocalState, getSettings, CompilerError, CompilerConst } from "mlogx";
-import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Point2, Link } from "msch";
-import { fail, impossible } from "./funcs.js";
+import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Liquid, Unit, Block, Point2, Link, ContentType } from "msch";
+import { fail, getKey, impossible } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
 import { Options } from "cli-app";
 
@@ -48,9 +48,22 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 	}
 	if(!config.config) return BlockConfig.null;
 
+	const content = {
+		"item": Item,
+		"liquid": Liquid,
+		"unit": Unit,
+		"block": Block,
+	} as const;
+
 	switch(config.config.type){
-		case "item":
-			return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value as keyof typeof Item] ?? fail(`Unknown item ${config.config.value}`)]);
+		case "item": case "liquid": case "unit": case "block":
+			return new BlockConfig(
+				BlockConfigType.content, [
+					ContentType[config.config.type],
+					getKey(content[config.config.type], config.config.value)
+						?? fail(`Unknown ${config.config.type} "${config.config.value}"`)
+				]
+			);
 		case "boolean":
 			return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
 		case "point":

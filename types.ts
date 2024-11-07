@@ -48,6 +48,9 @@ export interface SchematicBlockConfig {
 
 export type TileConfigType =
 | "item"
+| "liquid"
+| "unit"
+| "block"
 | "program"
 | "point"
 | "boolean"
