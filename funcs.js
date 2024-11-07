@@ -68,6 +68,12 @@ export function crash(message) {
 export function impossible() {
     throw new Error(`this shouldn't be possible...`);
 }
+/** `object` must not have any properties that are not specified in the type definition. */
+export function getKey(object, key) {
+    if (object instanceof Object)
+        crash(`getKey() is unsafe on an object that inherits from Object.prototype, because it will cause type unsoundness if key is "__proto__" or "hasOwnProperty"`);
+    return object[key];
+}
 export function tryRunOr(callback, errorHandler) {
     try {
         callback();

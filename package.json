@@ -33,6 +33,6 @@
     "cli-app": "github:BalaM314/cli-app",
     "jsonschema": "^1.4.1",
     "mlogx": "^2.4.1",
-    "msch": "^2.0.0"
+    "msch": "^2.1.0"
   }
 }

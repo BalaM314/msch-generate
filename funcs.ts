@@ -74,6 +74,13 @@ export function impossible():never {
 	throw new Error(`this shouldn't be possible...`);
 }
 
+/** `object` must not have any properties that are not specified in the type definition. */
+export function getKey<T extends {}, K extends PropertyKey>(object:T, key:K):(T extends unknown ? T[K & keyof T] : never) | undefined {
+	if(object instanceof Object)
+		crash(`getKey() is unsafe on an object that inherits from Object.prototype, because it will cause type unsoundness if key is "__proto__" or "hasOwnProperty"`);
+	return (object as any)[key] as (T extends unknown ? T[K & keyof T] : never) | undefined;
+}
+
 export function tryRunOr<T>(callback:() => T, errorHandler:(err:Message) => unknown):boolean {
 	try {
 		callback();

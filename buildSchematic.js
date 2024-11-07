@@ -2,8 +2,8 @@ import * as fs from "fs";
 import path from "path";
 import { Validator } from "jsonschema";
 import { compileMlogxToMlog, getState, getLocalState, getSettings, CompilerError } from "mlogx";
-import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Liquid, Unit, Block, Point2 } from "msch";
-import { fail, impossible } from "./funcs.js";
+import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Liquid, Unit, Block, Point2, ContentType } from "msch";
+import { fail, getKey, impossible } from "./funcs.js";
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"];
 function getBlockData(name, data, blockX, blockY, schematicConsts) {
     if (name == "")
@@ -33,15 +33,22 @@ function getBlockConfig(config, data, blockX, blockY, schematicConsts) {
     }
     if (!config.config)
         return BlockConfig.null;
+    const content = {
+        "item": Item,
+        "liquid": Liquid,
+        "unit": Unit,
+        "block": Block,
+    };
     switch (config.config.type) {
         case "item":
-            return new BlockConfig(BlockConfigType.content, [0, Item[config.config.value] ?? fail(`Unknown item ${config.config.value}`)]);
         case "liquid":
-            return new BlockConfig(BlockConfigType.content, [4, Liquid[config.config.value] ?? fail(`Unknown liquid ${config.config.value}`)]);
         case "unit":
-            return new BlockConfig(BlockConfigType.content, [6, Unit[config.config.value] ?? fail(`Unknown unit ${config.config.value}`)]);
         case "block":
-            return new BlockConfig(BlockConfigType.content, [1, Block[config.config.value] ?? fail(`Unknown block ${config.config.value}`)]);
+            return new BlockConfig(BlockConfigType.content, [
+                ContentType[config.config.type],
+                getKey(content[config.config.type], config.config.value)
+                    ?? fail(`Unknown ${config.config.type} "${config.config.value}"`)
+            ]);
         case "boolean":
             return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
         case "point":
@@ -130,13 +137,13 @@ function replaceConsts(text, consts) {
     return text;
 }
 function getSchematicConsts(data, extraConsts) {
-    return new Map(([
+    return new Map([
         ["name", data.info.name],
         ["version", data.info.version],
         ["authors", data.info.authors],
         ...Object.entries(data.consts ?? {}),
         ...Object.entries(extraConsts),
-    ])
+    ]
         .sort(([ka, va], [kb, vb]) => kb.length - ka.length));
 }
 function replaceConstsInConfig(data, icons) {
