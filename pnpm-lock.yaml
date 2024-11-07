@@ -18,8 +18,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       msch:
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: github:BalaM314/msch
+        version: https://codeload.github.com/BalaM314/msch/tar.gz/4251312ee10c0ff8c6688390cb7c16743edad396
     devDependencies:
       '@types/node':
         specifier: ^17.0.38
@@ -181,8 +181,9 @@ packages:
     resolution: {integrity: sha512-IbH7kyL5Ks1+5w7FPOrhOWOdG7RJlQ6emTZOAvmS3f5D8S2nopw4Wv/iXv61jSZncHhgxVYGPmg9MvinQOWpzA==}
     hasBin: true
 
-  msch@2.0.0:
-    resolution: {integrity: sha512-A1Lf1RxzTcZ862ZH2O0YSvIJglvSB62EcDwUvYzXVf8YgmYyEkfpcIjNxqEknxCBpWADcTTJnRLZsjcm1qPAhw==}
+  msch@https://codeload.github.com/BalaM314/msch/tar.gz/4251312ee10c0ff8c6688390cb7c16743edad396:
+    resolution: {tarball: https://codeload.github.com/BalaM314/msch/tar.gz/4251312ee10c0ff8c6688390cb7c16743edad396}
+    version: 2.1.0
 
   nanoclone@0.2.1:
     resolution: {integrity: sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==}
@@ -404,7 +405,7 @@ snapshots:
       deepmerge: 4.3.1
       yup: 0.32.11
 
-  msch@2.0.0:
+  msch@https://codeload.github.com/BalaM314/msch/tar.gz/4251312ee10c0ff8c6688390cb7c16743edad396:
     dependencies:
       smart-buffer: 4.2.0
 
