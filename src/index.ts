@@ -14,7 +14,7 @@ import path from "path";
 import { buildSchematic } from "./buildSchematic.js";
 import { parseIcons, tryRunOr } from "./funcs.js";
 
-const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
+export const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
 mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 	let schem:Schematic = Schematic.blank;
 	schem.tags["description"] = "Made with https://github.com/BalaM314/msch-generate";

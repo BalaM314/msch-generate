@@ -1,2 +1,3 @@
 #!/usr/bin/env node
-export {};
+import { Application } from "cli-app";
+export declare const mschGenerate: Application;
