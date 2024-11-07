@@ -190,7 +190,10 @@ export function buildSchematic(rawData, schema, icons) {
     const { valid, errors } = jsonschem.validate(unvalidatedData, schema);
     if (!valid)
         fail(`Schematic file is invalid: ${errors[0].stack}`);
-    const [data, schematicConsts] = replaceConstsInConfig(unvalidatedData, icons);
+    const validatedData = unvalidatedData;
+    [validatedData.info.tags, validatedData.consts, validatedData.tiles.programs, validatedData.tiles.blocks]
+        .filter(Boolean).forEach(o => Object.setPrototypeOf(o, null));
+    const [data, schematicConsts] = replaceConstsInConfig(validatedData, icons);
     const width = Math.max(0, ...data.tiles.grid.map(row => row.length));
     const height = data.tiles.grid.length;
     if (data.info.tags && "labels" in data.info.tags && data.info.labels)

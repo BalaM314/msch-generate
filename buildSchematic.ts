@@ -216,19 +216,23 @@ export function buildSchematic(rawData:string, schema:Schema, icons: Record<stri
 	}
 	const {valid, errors} = jsonschem.validate(unvalidatedData, schema);
 	if(!valid) fail(`Schematic file is invalid: ${errors[0].stack}`);
-	const [data, schematicConsts] = replaceConstsInConfig(unvalidatedData as SchematicData, icons);
+	const validatedData = unvalidatedData as SchematicData;
+	[validatedData.info.tags, validatedData.consts, validatedData.tiles.programs, validatedData.tiles.blocks]
+		.filter(Boolean).forEach(o => Object.setPrototypeOf(o, null));
+	const [data, schematicConsts] = replaceConstsInConfig(validatedData, icons);
 
 	const width = Math.max(0, ...data.tiles.grid.map(row => row.length));
 	const height = data.tiles.grid.length;
 	
-	if(data.info.tags && "labels" in data.info.tags && data.info.labels) fail(`Schematic file can only have data.info.labels or data.info.tags.labels, not both`);
+	if(data.info.tags && "labels" in data.info.tags && data.info.labels)
+		fail(`Schematic file can only have data.info.labels or data.info.tags.labels, not both`);
 	const tags = {
 		name: data.info.name,
 		description: data.info.description!,
 		labels: JSON.stringify(data.info.labels) ?? `[]`,
 		...data.info.tags
 	};
-	const tiles:(Tile|null)[][] = data.tiles.grid.map((row, reversedY) =>
+	const tiles = data.tiles.grid.map((row, reversedY) =>
 		row.map((tile, x) => 
 			getBlockData(tile, data, x, height - reversedY - 1, schematicConsts)
 		)
