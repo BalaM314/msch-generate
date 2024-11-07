@@ -3,7 +3,7 @@ Mindustry schematic parser and generator. Allows you to generate schematics from
 
 Installation: `npm i -g msch-generate`
 
-Usage: `msch build [schematic.json] (--output schematic.msch)`
+Usage: `msch build [schematic.json] (-o schematic.msch)`
 
 ## Example
 
@@ -69,7 +69,11 @@ Usage: `msch build [schematic.json] (--output schematic.msch)`
 
 * File validation, error handling, and JSON schema
 * All block config types
+* Specify content configs (unit type, block, item) with the item name instead of id
 * Specify code for processor as a string[] or a file path, automatically compresses to a byte[]
-* MLOGX integration, automatically compiles mlogx programs
+* MLOGX integration, automatically compiles mlogx programs at specified file paths
 * Compiler constants: replace bits of your schematic file or programs (like C #define)
-* Icons: $_copper is automatically replaced with the mindustry-specific unicode character for copper
+* All content-based icon characters (items, blocks, team icons)
+	- for example, $_copper is automatically replaced with the mindustry-specific unicode character for copper, U+F838
+
+See [Overkill RC.json]() for an example JSON file.

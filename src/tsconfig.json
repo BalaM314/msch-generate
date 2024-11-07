@@ -1,8 +1,9 @@
 {
 	"extends": "../tsconfig.json",
   "compilerOptions": {
+		"composite": true,
     "declaration": true,
 		"outDir": "../build/",
 		"types": ["node"]
-  },
+  }
 }
