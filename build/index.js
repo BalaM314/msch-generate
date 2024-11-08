@@ -8,7 +8,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 */
 import { Application } from "cli-app";
 import * as fs from "fs";
-import { Schematic } from "msch"; // tslint:disable-line
+import { Schematic, MessageError } from "msch"; // tslint:disable-line
 import path from "path";
 import { buildSchematic } from "./buildSchematic.js";
 import { parseIcons, tryRunOr } from "./funcs.js";
@@ -17,14 +17,21 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
     let schem = Schematic.blank;
     schem.tags["description"] = "Made with https://github.com/BalaM314/msch-generate";
     if (opts.namedArgs["read"]) {
-        const result = Schematic.read(fs.readFileSync(opts.namedArgs["read"]));
-        if (typeof result == "string") {
-            console.error("Invalid schematic.", result);
-            return 1;
+        try {
+            const result = Schematic.read(fs.readFileSync(opts.namedArgs["read"]));
+            if (typeof result == "string") {
+                console.error("Invalid schematic.", result);
+                return 1;
+            }
+            schem = result;
+            schem.display("verbose" in opts.namedArgs);
+            schem.tags["description"] ??= "Made with https://github.com/BalaM314/msch-generate";
         }
-        schem = result;
-        schem.display("verbose" in opts.namedArgs);
-        schem.tags["description"] ??= "Made with https://github.com/BalaM314/msch-generate";
+        catch (err) {
+            if (err instanceof MessageError) {
+                console.error(`Invalid schematic: ${err.message}`);
+            }
+        }
     }
     if ("interactive" in opts.namedArgs) {
         console.log("Interactive JavaScript shell, type .exit or Ctrl+C to exit.");

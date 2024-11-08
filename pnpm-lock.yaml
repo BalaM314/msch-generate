@@ -31,7 +31,7 @@ importers:
         specifier: ^5.4.0
         version: 5.4.0
       typescript:
-        specifier: '5.6'
+        specifier: ^5.6
         version: 5.6.3
       typescript-json-schema:
         specifier: ^0.54.0
