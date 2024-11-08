@@ -37,11 +37,11 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 	}
 	if("interactive" in opts.namedArgs){
 		console.log("Interactive JavaScript shell, type .exit or Ctrl+C to exit.");
-		console.log("The schematic variable is \`schem\`.");
-		let help = "Type .help for help.";
+		console.log(`The schematic variable is "schem".`);
+		const help = "Type .help for help.";
 		process.stdout.write("\n> ");
 		process.stdin.on("data", (data) => {
-			let line = data.toString().split(/\r?\n/g)[0];
+			const line = data.toString().split(/\r?\n/g)[0];
 			if(line.startsWith(".")){
 				if(line == ".exit"){
 					process.exit(0);
@@ -56,25 +56,25 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 					);
 				} else if(line.startsWith(".output")){
 					if(line.split(".output ")[1]){
-						let outputPath = line.split(".output ")[1]?.endsWith(".msch") ? line.split(".output ")[1] : line.split(".output ")[1] + ".msch";
+						const outputPath = line.split(".output ")[1]?.endsWith(".msch") ? line.split(".output ")[1] : line.split(".output ")[1] + ".msch";
 						fs.writeFileSync(outputPath, schem.write().toBuffer());
 						console.log(`Wrote modified file to ${outputPath}.`);
 					} else {
-						console.log(`Usage: .output <filename>`)
+						console.log(`Usage: .output <filename>`);
 					}
 				} else if(line.startsWith(".name")){
 					if(line.split(".name ")[1]){
 						schem.tags["name"] = line.split(".name ")[1];
 						console.log(`Set name to ${line.split(".name ")[1]}`);
 					} else {
-						console.log(`Usage: .name <name>`)
+						console.log(`Usage: .name <name>`);
 					}
 				} else if(line.startsWith(".description")){
 					if(line.split(".description ")[1]){
 						schem.tags["description"] = line.split(".description ")[1];
 						console.log(`Set description to ${line.split(".description ")[1]}`);
 					} else {
-						console.log(`Usage: .description <description>`)
+						console.log(`Usage: .description <description>`);
 					}
 				} else {
 					console.log("Invalid command.");
@@ -90,7 +90,7 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 				}
 			}
 			process.stdout.write("\n> ");
-		})
+		});
 	}
 }, true, {
 	positionalArgCountCheck: "warn",

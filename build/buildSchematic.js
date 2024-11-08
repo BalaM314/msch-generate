@@ -51,30 +51,31 @@ function getBlockConfig(config, data, blockX, blockY, schematicConsts) {
             ]);
         case "boolean":
             return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
-        case "point":
+        case "point": {
             const [x, y, ...rest] = config.config.value.split(/, ?/);
             if (!x || !y || rest.length > 0)
                 fail(`Invalid point config "${config.config.value}", should be of the form "5,6"`);
             return new BlockConfig(BlockConfigType.point, new Point2(+x, +y));
+        }
         case "string":
             return new BlockConfig(BlockConfigType.string, config.config.value);
-        case "program":
+        case "program": {
             const program = data.tiles.programs?.[config.config.value] ?? fail(`Unknown program "${config.config.value}"`);
-            let code;
-            if (typeof program == "string") {
-                code = getProgramFromFile(program, schematicConsts);
-            }
-            else if (program instanceof Array) {
-                code = program;
-            }
-            else
-                impossible();
+            const code = (() => {
+                if (typeof program == "string")
+                    return getProgramFromFile(program, schematicConsts);
+                else if (program instanceof Array)
+                    return program;
+                else
+                    impossible();
+            })();
             return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
                 links: getLinks(config, data, blockX, blockY),
                 code
             }));
+        }
         default:
-            fail(`Invalid config type "${config.config.type}"`);
+            fail(`Invalid config type "${String(config.config.type)}"`);
     }
 }
 function getProgramFromFile(path, schematicConsts) {
@@ -192,7 +193,9 @@ export function buildSchematic(rawData, schema, icons) {
         fail(`Schematic file is invalid: ${errors[0].stack}`);
     const validatedData = unvalidatedData;
     [validatedData.info.tags, validatedData.consts, validatedData.tiles.programs, validatedData.tiles.blocks]
-        .filter(Boolean).forEach(o => Object.setPrototypeOf(o, null));
+        .filter(Boolean).forEach(o => {
+        Object.setPrototypeOf(o, null);
+    });
     const [data, schematicConsts] = replaceConstsInConfig(validatedData, icons);
     const width = Math.max(0, ...data.tiles.grid.map(row => row.length));
     const height = data.tiles.grid.length;

@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "type": "module",
   "scripts": {
-    "test": "jasmine",
+    "test": "tsc -b spec && jasmine",
     "updateschema": "typescript-json-schema tsconfig.json SchematicData > docs/msch-v1.schema.json",
     "watch": "tsc -b src/ spec/ -w"
   },
@@ -28,16 +28,18 @@
   "homepage": "https://github.com/BalaM314/msch#readme",
   "devDependencies": {
     "@types/jasmine": "^5.1.4",
-    "@types/node": "^17.0.38",
+    "@types/node": "^20.17.6",
     "jasmine": "^5.4.0",
-    "typescript": "^5.6",
+    "typescript": "^5.6.3",
     "typescript-json-schema": "^0.54.0"
   },
   "dependencies": {
     "cli-app": "github:BalaM314/cli-app",
+    "eslint": "^9.14.0",
     "jsonschema": "^1.4.1",
-    "mlogx": "^2.4.1",
-    "msch": "^2.1.0"
+    "mlogx": "^2.5.1",
+    "msch": "^2.1.2",
+    "typescript-eslint": "^8.13.0"
   },
   "files": [
     "build",

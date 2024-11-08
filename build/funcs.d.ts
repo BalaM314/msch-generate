@@ -1,9 +1,3 @@
-/**Parses command line args. */
-export declare function parseArgs(args: string[]): [parsedArgs: {
-    [index: string]: string | undefined;
-}, mainArgs: string[]];
-export declare function toHexCodes(buf: Buffer): string[];
-export declare function fromHexCodes(str: string): Buffer;
 /**Parses icons out of the data in the icons.properties file from the Mindustry source code. */
 export declare function parseIcons(data: string[]): {
     [id: string]: string;

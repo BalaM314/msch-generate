@@ -3,11 +3,12 @@ import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { mschGenerate } from "../../build/index.js";
+import "../../build/global-types.js";
 
 const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
-console.log(path.join(rootDir, "build/index.js"));
 process.chdir(path.join(rootDir, "spec"));
 function runMsch(...args:string[]){
+	spyOn(console, "log");
 	mschGenerate.run(["node", path.join(rootDir, "build/index.js"), ...args], {throwOnError: true});
 }
 
@@ -36,7 +37,7 @@ describe("msch init", () => {
 			filepath
 		);
 		const data = fs.readFileSync(filepath, "utf-8");
-		expect(() => JSON.parse(data)).not.toThrow();
+		expect(() => void JSON.parse(data)).not.toThrow();
 	});
 });
 

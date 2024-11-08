@@ -66,26 +66,27 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 			);
 		case "boolean":
 			return new BlockConfig(BlockConfigType.boolean, config.config.value == "false" ? false : true);
-		case "point":
+		case "point": {
 			const [x, y, ...rest] = config.config.value.split(/, ?/);
 			if(!x || !y || rest.length > 0) fail(`Invalid point config "${config.config.value}", should be of the form "5,6"`);
 			return new BlockConfig(BlockConfigType.point, new Point2(+x, +y));
+		}
 		case "string":
 			return new BlockConfig(BlockConfigType.string, config.config.value);
-		case "program":
+		case "program": {
 			const program = data.tiles.programs?.[config.config.value] ?? fail(`Unknown program "${config.config.value}"`);
-			let code:string[];
-			if(typeof program == "string"){
-				code = getProgramFromFile(program, schematicConsts);
-			} else if(program instanceof Array){
-				code = program;
-			} else impossible();
+			const code:string[] = (() => {
+				if(typeof program == "string") return getProgramFromFile(program, schematicConsts);
+				else if(program instanceof Array) return program;
+				else impossible();
+			})();
 			return new BlockConfig(BlockConfigType.bytearray, Tile.compressLogicConfig({
 				links: getLinks(config, data, blockX, blockY),
 				code
 			}));
+		}
 		default:
-			fail(`Invalid config type "${config.config.type}"`);
+			fail(`Invalid config type "${String(config.config.type)}"`);
 	}
 }
 
@@ -190,8 +191,7 @@ function replaceConstsInConfig(data:SchematicData, icons:Record<string, string>)
 				row.map(name => replaceConsts(name, compilerConsts))
 			),
 			programs: data.tiles.programs,
-			blocks: Object.fromEntries(
-				Object.entries(data.tiles.blocks) //TODO no longer necessary in some cases
+			blocks: Object.fromEntries(Object.entries(data.tiles.blocks) //TODO no longer necessary in some cases
 				.map(([name, blockData]) => ([name, {
 					...blockData,
 					id: replaceConsts(blockData.id, compilerConsts),
@@ -218,7 +218,9 @@ export function buildSchematic(rawData:string, schema:Schema, icons: Record<stri
 	if(!valid) fail(`Schematic file is invalid: ${errors[0].stack}`);
 	const validatedData = unvalidatedData as SchematicData;
 	[validatedData.info.tags, validatedData.consts, validatedData.tiles.programs, validatedData.tiles.blocks]
-		.filter(Boolean).forEach(o => Object.setPrototypeOf(o, null));
+		.filter(Boolean).forEach(o => {
+			Object.setPrototypeOf(o, null);
+		});
 	const [data, schematicConsts] = replaceConstsInConfig(validatedData, icons);
 
 	const width = Math.max(0, ...data.tiles.grid.map(row => row.length));
