@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      cli-app:
-        specifier: github:BalaM314/cli-app
-        version: https://codeload.github.com/BalaM314/cli-app/tar.gz/153ebb74fed32c9bd10ca64788a580e112cc2afb
+      '@balam314/cli-app':
+        specifier: 3.0.2
+        version: 3.0.2
       jsonschema:
         specifier: ^1.4.1
         version: 1.4.1
@@ -42,6 +42,9 @@ packages:
   '@babel/runtime@7.22.5':
     resolution: {integrity: sha512-ecjvYlnAaZ/KVneE/OdKYBYfgXV3Ptu6zQWmgEF7vwKhQnvVS6bjMD2XYgj+SNvQ1GfK/pjgokfPkC/2CO8CuA==}
     engines: {node: '>=6.9.0'}
+
+  '@balam314/cli-app@3.0.2':
+    resolution: {integrity: sha512-OY/XxOOXV9d3UyfsV+LObSMcu7a/uzdloZCNP/EEy80nikMg45kZ9/FzIRLdflOU7XX7ErOG5gqnLonilYV72Q==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -399,6 +402,8 @@ snapshots:
   '@babel/runtime@7.22.5':
     dependencies:
       regenerator-runtime: 0.13.11
+
+  '@balam314/cli-app@3.0.2': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:

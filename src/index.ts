@@ -6,16 +6,28 @@ msch-generate is free software: you can redistribute it and/or modify it under t
 msch-generate is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License along with msch-generate. If not, see <https://www.gnu.org/licenses/>.
 */
-import { Application } from "cli-app";
+import { Application, arg } from "@balam314/cli-app";
 import * as fs from "fs";
 import { Schema } from "jsonschema";
-import { Schematic, Tile, Point2, TypeIO, BlockConfig, BlockConfigType, MessageError } from "msch"; // tslint:disable-line
+import { Schematic, Tile, Point2, TypeIO, BlockConfig, BlockConfigType, MessageError } from "msch";
 import path from "path";
 import { buildSchematic } from "./buildSchematic.js";
 import { parseIcons, tryRunOr } from "./funcs.js";
 
 export const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
-mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
+mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args({
+	positionalArgCountCheck: "error",
+	namedArgs: {
+		read: arg().description("The path to the file to load as a schematic.")
+			.optional().aliases("r"),
+		verbose: arg().description("Whether to be verbose when displaying the loaded schematic. WARNING: may spam console.")
+			.valueless().aliases("v"),
+		interactive: arg().description("Starts a shell, allowing you to edit the schematic by typing JS code.")
+			.valueless().aliases("i")
+	},
+	positionalArgs: []
+})
+.impl((opts, app) => {
 	let schem:Schematic = Schematic.blank;
 	schem.tags["description"] = "Made with https://github.com/BalaM314/msch-generate";
 	
@@ -92,28 +104,18 @@ mschGenerate.command("manipulate", "Manipulates a schematic.", (opts, app) => {
 			process.stdout.write("\n> ");
 		})
 	}
-}, true, {
-	positionalArgCountCheck: "warn",
+});
+mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args({
 	namedArgs: {
-		read: {
-			description: "The path to the file to load as a schematic.",
-			aliases: ["r"],
-		},
-		verbose: {
-			description: "Whether to be verbose when displaying the loaded schematic. WARNING: may spam console.",
-			needsValue: false,
-			aliases: ["v"],
-		},
-		interactive: {
-			description: "Starts a shell, allowing you to edit the schematic by typing JS code.",
-			needsValue: false,
-			aliases: ["i"]
-		}
+		output: arg().optional().description("Output file location").aliases("o"),
 	},
-	positionalArgs: []
-}, ["m"]);
-mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
-	const target:string = opts.positionalArgs[0];
+	positionalArgs: [{
+		name: "file",
+		description: "The JSON file to build"
+	}],
+	positionalArgCountCheck: "warn",
+}).impl((opts, app) => {
+	const target:string = opts.positionalArgs[0]!;
 	if(!fs.existsSync(target)){
 		console.error(`Filepath ${target} does not exist.`);
 		return;
@@ -143,7 +145,7 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
 		process.chdir(cwd);
 		console.log(`Built schematic.`);
 		schem.display(false);
-		const outputPath = opts.namedArgs["output"] ?? opts.positionalArgs[0].replace(/(.json)?$/, ".msch");
+		const outputPath = opts.namedArgs["output"] ?? target.replace(/(.json)?$/, ".msch");
 		console.log(`Writing to ${outputPath}...`);
 		fs.writeFileSync(outputPath, schem.write().toBuffer());
 		console.log("Done!");
@@ -152,20 +154,19 @@ mschGenerate.command("build", "Builds a schematic.", (opts, app) => {
 		process.exit(1);
 	});
 
-}, true, {
+});
+mschGenerate.command("init", "Creates a JSON schematic file.").args({
 	namedArgs: {
-		output: {
-			description: "Output file location",
-			aliases: ["o"],
-		}
+		name: arg().optional().description("Project name").aliases("n"),
+		description: arg().optional().description("Project description").aliases("d", "desc"),
+		authors: arg().optional().description("Project authors").aliases("author", "a"),
 	},
 	positionalArgs: [{
 		name: "file",
-		description: "The JSON file to build"
+		description: "The path of the JSON file to create",
 	}],
 	positionalArgCountCheck: "warn",
-}, ["b"]);
-mschGenerate.command("init", "Creates a JSON schematic file.", (opts, app) => {
+}).impl((opts, app) => {
 	const jsonData = {
 		"$schema": "https://raw.githubusercontent.com/BalaM314/msch-generate/main/docs/msch-v1.schema.json",
 		info: {
@@ -193,29 +194,7 @@ mschGenerate.command("init", "Creates a JSON schematic file.", (opts, app) => {
 	};
 	const outputJSON = JSON.stringify(jsonData, undefined, `\t`);
 	console.log(`Writing JSON data to ${opts.positionalArgs[0]}`);
-	fs.writeFileSync(opts.positionalArgs[0], outputJSON, "utf-8");
-}, false, {
-	namedArgs: {
-		name: {
-			description: "Project name",
-			required: true,
-			aliases: ["n"],
-		},
-		description: {
-			description: "Project description",
-			aliases: ["d"],
-		},
-		authors: {
-			description: "Project authors",
-			aliases: ["a"],
-		},
-	},
-	positionalArgs: [{
-		name: "file",
-		description: "The path of the JSON file to create",
-		required: true,
-	}],
-	positionalArgCountCheck: "warn",
-}, ["i"]);
+	fs.writeFileSync(opts.positionalArgs[0]!, outputJSON, "utf-8");
+});
 
 mschGenerate.run(process.argv);

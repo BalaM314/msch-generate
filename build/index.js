@@ -8,7 +8,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 */
 import { Application } from "cli-app";
 import * as fs from "fs";
-import { Schematic, MessageError } from "msch"; // tslint:disable-line
+import { Schematic, MessageError } from "msch";
 import path from "path";
 import { buildSchematic } from "./buildSchematic.js";
 import { parseIcons, tryRunOr } from "./funcs.js";
