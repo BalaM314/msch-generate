@@ -1,6 +1,6 @@
 {
   "name": "msch-generate",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Mindustry schematic buildtool.",
   "main": "build/index.js",
   "type": "module",
@@ -34,9 +34,9 @@
     "typescript-json-schema": "^0.54.0"
   },
   "dependencies": {
-    "@balam314/cli-app": "3.0.2",
+    "@balam314/cli-app": "^3.0.2",
     "jsonschema": "^1.4.1",
-    "mlogx": "^2.4.1",
+    "mlogx": "^2.5.2",
     "msch": "^2.1.0"
   },
   "files": [

@@ -39,7 +39,7 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
 				return 1;
 			}
 			schem = result;
-			schem.display("verbose" in opts.namedArgs);
+			schem.display(opts.namedArgs.verbose);
 			schem.tags["description"] ??= "Made with https://github.com/BalaM314/msch-generate";
 		} catch(err){
 			if(err instanceof MessageError){
@@ -47,7 +47,7 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
 			}
 		}
 	}
-	if("interactive" in opts.namedArgs){
+	if(opts.namedArgs.interactive){
 		console.log("Interactive JavaScript shell, type .exit or Ctrl+C to exit.");
 		console.log("The schematic variable is \`schem\`.");
 		let help = "Type .help for help.";
