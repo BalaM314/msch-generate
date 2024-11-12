@@ -46,4 +46,5 @@ export type TileConfigType =
 | "point"
 | "boolean"
 | "string"
+| "command"
 ;

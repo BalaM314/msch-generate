@@ -35,4 +35,4 @@ export type SchematicBlockConfig = {
     };
     rotation?: Rotation;
 };
-export type TileConfigType = "item" | "liquid" | "unit" | "block" | "program" | "point" | "boolean" | "string";
+export type TileConfigType = "item" | "liquid" | "unit" | "block" | "program" | "point" | "boolean" | "string" | "command";

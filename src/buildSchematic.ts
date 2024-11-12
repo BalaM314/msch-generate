@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Schema, Validator } from "jsonschema";
 import { compileMlogxToMlog, CompilerConsts, getState, getLocalState, getSettings, CompilerError, CompilerConst } from "mlogx";
-import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Liquid, Unit, Block, Point2, Link, ContentType } from "msch";
+import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Liquid, Unit, Block, Point2, Link, ContentType, UnitCommand } from "msch";
 import { fail, getKey, impossible } from "./funcs.js";
 import { SchematicBlockConfig, SchematicData } from "./types.js";
 
@@ -84,7 +84,12 @@ function getBlockConfig(config:SchematicBlockConfig, data:SchematicData, blockX:
 				code
 			}));
 		}
+		case "command": {
+			const command = getKey(UnitCommand, config.config.value) ?? fail(`Unknown unit command "${config.config.value}"`);
+			return new BlockConfig(BlockConfigType.unitcommand, command);
+		}
 		default:
+			config.config.type satisfies never;
 			fail(`Invalid config type "${String(config.config.type)}"`);
 	}
 }

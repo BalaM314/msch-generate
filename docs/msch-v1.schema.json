@@ -1,141 +1,142 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "definitions": {
-        "SchematicBlockConfig": {
-            "description": "Represents the configuration of a block.",
-            "properties": {
-                "config": {
-                    "properties": {
-                        "type": {
-                            "enum": [
-                                "boolean",
-                                "item",
-                                "liquid",
-                                "unit",
-                                "block",
-                                "point",
-                                "program",
-                                "string"
-                            ],
-                            "type": "string"
-                        },
-                        "value": {
-                            "type": "string"
-                        }
-                    },
-                    "required": ["type", "value"],
-                    "type": "object"
-                },
-                "id": {
-                    "description": "The Mindustry block id. Example: conveyor large-surge-wall micro-processor",
-                    "type": "string"
-                },
-                "links": {
-                    "description": "List of links. Unlike in a regular schematic, this is for processor and power node links. If multiple blocks have the same name, this will link to all blocks with that name.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "rotation": {
-                    "description": "0 is right, 1 is up, 2 is left, 3 is down.",
-                    "enum": [
-                        0,
-                        1,
-                        2,
-                        3
-                    ],
-                    "type": "number"
-                }
-            },
-            "type": "object",
-						"required": ["id"]
-        }
-    },
-    "properties": {
-        "consts": {
-            "additionalProperties": {
-                "type": "string"
-            },
-            "description": "A list of constants that will replace text in your schematic.\nExample: the line `\"foo\": \"bar\"` will cause any text that says \"$foo\" to be replaced with \"bar\".",
-            "type": "object"
-        },
-        "info": {
-            "description": "Contains metadata like name, description, authors, and version.",
-            "properties": {
-                "authors": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "labels": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "tags": {
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "type": "object"
-                },
-                "version": {
-                    "type": "string"
-                }
-            },
-            "type": "object",
-						"required": ["name", "authors", "version"]
-        },
-        "tiles": {
-            "properties": {
-                "blocks": {
-                    "additionalProperties": {
-                        "$ref": "#/definitions/SchematicBlockConfig"
-                    },
-                    "description": "A list mapping block names to configs.",
-                    "type": "object"
-                },
-                "grid": {
-                    "description": "A grid of block names that specifies how your schematic is laid out.",
-                    "items": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array"
-                    },
-                    "type": "array"
-                },
-                "programs": {
-                    "additionalProperties": {
-                        "anyOf": [
-                            {
-                                "items": {
-                                    "type": "string"
-                                },
-                                "type": "array"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
-                    },
-                    "description": "A list of mlog programs.",
-                    "type": "object"
-                }
-            },
-            "type": "object",
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"definitions": {
+		"SchematicBlockConfig": {
+			"description": "Represents the configuration of a block.",
+			"properties": {
+				"config": {
+					"properties": {
+						"type": {
+							"enum": [
+								"boolean",
+								"item",
+								"liquid",
+								"unit",
+								"block",
+								"point",
+								"program",
+								"string",
+								"command"
+							],
+							"type": "string"
+						},
+						"value": {
+							"type": "string"
+						}
+					},
+					"required": ["type", "value"],
+					"type": "object"
+				},
+				"id": {
+					"description": "The Mindustry block id. Example: conveyor large-surge-wall micro-processor",
+					"type": "string"
+				},
+				"links": {
+					"description": "List of links. Unlike in a regular schematic, this is for processor and power node links. If multiple blocks have the same name, this will link to all blocks with that name.",
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"rotation": {
+					"description": "0 is right, 1 is up, 2 is left, 3 is down.",
+					"enum": [
+						0,
+						1,
+						2,
+						3
+					],
+					"type": "number"
+				}
+			},
+			"type": "object",
+			"required": ["id"]
+		}
+	},
+	"properties": {
+		"consts": {
+			"additionalProperties": {
+				"type": "string"
+			},
+			"description": "A list of constants that will replace text in your schematic.\nExample: the line `\"foo\": \"bar\"` will cause any text that says \"$foo\" to be replaced with \"bar\".",
+			"type": "object"
+		},
+		"info": {
+			"description": "Contains metadata like name, description, authors, and version.",
+			"properties": {
+				"authors": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"description": {
+					"type": "string"
+				},
+				"labels": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"name": {
+					"type": "string"
+				},
+				"tags": {
+					"additionalProperties": {
+						"type": "string"
+					},
+					"type": "object"
+				},
+				"version": {
+					"type": "string"
+				}
+			},
+			"type": "object",
+			"required": ["name", "authors", "version"]
+		},
+		"tiles": {
+			"properties": {
+				"blocks": {
+					"additionalProperties": {
+						"$ref": "#/definitions/SchematicBlockConfig"
+					},
+					"description": "A list mapping block names to configs.",
+					"type": "object"
+				},
+				"grid": {
+					"description": "A grid of block names that specifies how your schematic is laid out.",
+					"items": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"type": "array"
+				},
+				"programs": {
+					"additionalProperties": {
+						"anyOf": [
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"description": "A list of mlog programs.",
+					"type": "object"
+				}
+			},
+			"type": "object",
 						"required": ["grid", "blocks"]
-        }
-    },
-    "type": "object",
+		}
+	},
+	"type": "object",
 		"required": ["info", "tiles"]
 }
 
