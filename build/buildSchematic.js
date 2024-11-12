@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { Validator } from "jsonschema";
 import { compileMlogxToMlog, getState, getLocalState, getSettings, CompilerError } from "mlogx";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Liquid, Unit, Block, Point2, ContentType } from "msch";
@@ -96,7 +96,10 @@ function compileMlogxProgram(filepath, schematicConsts) {
     const directory = path.join(filepath, "..");
     const settings = getSettings(directory, true);
     const globalState = getState(settings, directory, {
-        namedArgs: {}
+        namedArgs: {
+            verbose: false,
+            watch: false,
+        }
     });
     const state = getLocalState(globalState, path.extname(filepath), new Map(), //no need for icons, we already have them in schematicConsts
     schematicConsts);

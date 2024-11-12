@@ -1,11 +1,10 @@
-import * as fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { Schema, Validator } from "jsonschema";
 import { compileMlogxToMlog, CompilerConsts, getState, getLocalState, getSettings, CompilerError, CompilerConst } from "mlogx";
 import { BlockConfig, BlockConfigType, Schematic, Tile, Item, Liquid, Unit, Block, Point2, Link, ContentType } from "msch";
 import { fail, getKey, impossible } from "./funcs.js";
-import { SchematicBlockConfig, SchematicData, TileConfigType } from "./types.js";
-import { Options } from "cli-app";
+import { SchematicBlockConfig, SchematicData } from "./types.js";
 
 const powerNodes = ["power-node", "power-node-large", "power-source", "surge-tower"];
 
@@ -111,8 +110,11 @@ function compileMlogxProgram(filepath:string, schematicConsts:CompilerConsts):st
 	
 	const settings = getSettings(directory, true);
 	const globalState = getState(settings, directory, {
-		namedArgs: {}
-	} as Options);
+		namedArgs: {
+			verbose: false,
+			watch: false,
+		}
+	});
 	const state = getLocalState(globalState,
 		path.extname(filepath),
 		new Map(), //no need for icons, we already have them in schematicConsts
