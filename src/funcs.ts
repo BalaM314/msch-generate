@@ -2,15 +2,14 @@
 
 /**Parses icons out of the data in the icons.properties file from the Mindustry source code. */
 export function parseIcons(data:string[]) {
-	const icons: {
-		[id: string]: string;
-	} = {};
+	const icons: Record<string, string> = {};
 	for(const line of data){
 		if(line.length == 0) continue;
 		try {
+			const [key, value] = line.split("=") as [string, string];
 			icons[
-				"_" + line.split("=")[1].split("|")[0].replaceAll("-","_")
-			] = String.fromCodePoint(parseInt(line.split("=")[0]));
+				"_" + value.split("|")[0]!.replaceAll("-","_")
+			] = String.fromCodePoint(parseInt(key));
 		} catch(err){
 			if(!(err instanceof RangeError)){
 				console.error(line);

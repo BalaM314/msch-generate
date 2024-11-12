@@ -1,5 +1,5 @@
 import { Rotation } from "msch";
-export interface SchematicData {
+export type SchematicData = {
     /**Contains metadata like name, description, authors, and version. */
     info: {
         name: string;
@@ -7,33 +7,24 @@ export interface SchematicData {
         labels?: string[];
         authors: string[];
         version: string;
-        tags?: {
-            [name: string]: string;
-        };
+        tags?: Record<string, string>;
     };
     tiles: {
         /**A grid of block names that specifies how your schematic is laid out. */
         grid: string[][];
         /**A list mapping block names to configs. */
-        blocks: {
-            [name: string]: SchematicBlockConfig;
-        };
+        blocks: Record<string, SchematicBlockConfig>;
         /**A list of mlog programs. */
-        programs?: {
-            /**If an array, interpreted as a program, otherwise interpreted as a path to a program. */
-            [name: string]: string[] | string;
-        };
+        programs?: Record<string, string[] | string>;
     };
     /**
      * A list of constants that will replace text in your schematic.
      * Example: the line `"foo": "bar"` will cause any text that says "$foo" to be replaced with "bar".
      */
-    consts?: {
-        [name: string]: string;
-    };
-}
+    consts?: Record<string, string>;
+};
 /**Represents the configuration of a block. */
-export interface SchematicBlockConfig {
+export type SchematicBlockConfig = {
     /**The Mindustry block id. Example: conveyor large-surge-wall micro-processor */
     id: string;
     /**List of links. Unlike in a regular schematic, this is for processor AND power node links. */
@@ -43,5 +34,5 @@ export interface SchematicBlockConfig {
         value: string;
     };
     rotation?: Rotation;
-}
+};
 export type TileConfigType = "item" | "liquid" | "unit" | "block" | "program" | "point" | "boolean" | "string";

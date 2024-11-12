@@ -24,13 +24,12 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
             .valueless().aliases("i")
     },
     positionalArgs: []
-})
-    .impl((opts, app) => {
+}).impl((opts, app) => {
     let schem = Schematic.blank;
     schem.tags["description"] = "Made with https://github.com/BalaM314/msch-generate";
-    if (opts.namedArgs["read"]) {
+    if (opts.namedArgs.read) {
         try {
-            const result = Schematic.read(fs.readFileSync(opts.namedArgs["read"]));
+            const result = Schematic.read(fs.readFileSync(opts.namedArgs.read));
             if (typeof result == "string") {
                 console.error("Invalid schematic.", result);
                 return 1;
@@ -65,8 +64,9 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
 	.description Sets the description of the schematic.`);
                 }
                 else if (line.startsWith(".output")) {
-                    if (line.split(".output ")[1]) {
-                        const outputPath = line.split(".output ")[1]?.endsWith(".msch") ? line.split(".output ")[1] : line.split(".output ")[1] + ".msch";
+                    const outFile = line.split(".output ")[1];
+                    if (outFile) {
+                        const outputPath = outFile.endsWith(".msch") ? outFile : outFile + ".msch";
                         fs.writeFileSync(outputPath, schem.write().toBuffer());
                         console.log(`Wrote modified file to ${outputPath}.`);
                     }
@@ -75,18 +75,20 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
                     }
                 }
                 else if (line.startsWith(".name")) {
-                    if (line.split(".name ")[1]) {
-                        schem.tags["name"] = line.split(".name ")[1];
-                        console.log(`Set name to ${line.split(".name ")[1]}`);
+                    const name = line.split(".name ")[1];
+                    if (name) {
+                        schem.tags["name"] = name;
+                        console.log(`Set name to ${name}`);
                     }
                     else {
                         console.log(`Usage: .name <name>`);
                     }
                 }
                 else if (line.startsWith(".description")) {
-                    if (line.split(".description ")[1]) {
-                        schem.tags["description"] = line.split(".description ")[1];
-                        console.log(`Set description to ${line.split(".description ")[1]}`);
+                    const description = line.split(".description ")[1];
+                    if (description) {
+                        schem.tags["description"] = description;
+                        console.log(`Set description to ${description}`);
                     }
                     else {
                         console.log(`Usage: .description <description>`);
@@ -99,9 +101,6 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
             else {
                 try {
                     console.log(eval(line));
-                    //this line uses eval
-                    //which could potentially lead to an arbitrary code execution vulnerability
-                    //ive tried to remove it but the feature just doesnt work without it
                 }
                 catch (err) {
                     console.error(err);
@@ -152,7 +151,7 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
         process.chdir(cwd);
         console.log(`Built schematic.`);
         schem.display(false);
-        const outputPath = opts.namedArgs["output"] ?? target.replace(/(.json)?$/, ".msch");
+        const outputPath = opts.namedArgs.output ?? target.replace(/(.json)?$/, ".msch");
         console.log(`Writing to ${outputPath}...`);
         fs.writeFileSync(outputPath, schem.write().toBuffer());
         console.log("Done!");
@@ -198,4 +197,4 @@ mschGenerate.command("init", "Creates a JSON schematic file.").args({
     console.log(`Writing JSON data to ${opts.positionalArgs[0]}`);
     fs.writeFileSync(opts.positionalArgs[0], outputJSON, "utf-8");
 });
-mschGenerate.run(process.argv);
+void mschGenerate.run(process.argv);

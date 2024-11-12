@@ -193,7 +193,7 @@ export function buildSchematic(rawData, schema, icons) {
     }
     const { valid, errors } = jsonschem.validate(unvalidatedData, schema);
     if (!valid)
-        fail(`Schematic file is invalid: ${errors[0].stack}`);
+        fail(`Schematic file is invalid: ${errors[0]?.stack}`);
     const validatedData = unvalidatedData;
     [validatedData.info.tags, validatedData.consts, validatedData.tiles.programs, validatedData.tiles.blocks]
         .filter(Boolean).forEach(o => {

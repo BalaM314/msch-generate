@@ -10,6 +10,7 @@ export default tseslint.config(
 	},
 	eslint.configs.recommended,
 	...tseslint.configs.recommendedTypeChecked,
+	...tseslint.configs.stylisticTypeChecked,
 	{
 		languageOptions: {
 			parserOptions: {
@@ -40,6 +41,11 @@ export default tseslint.config(
 			"@typescript-eslint/no-unsafe-function-type": "off",
 			"@typescript-eslint/no-empty-object-type": "off",
 			"@typescript-eslint/prefer-promise-reject-errors": "off",
+			"@typescript-eslint/consistent-type-definitions": ["error", "type"],
+			"@typescript-eslint/no-explicit-any": "off",
+			"@typescript-eslint/no-this-alias": "off",
+			"@typescript-eslint/prefer-regexp-exec": "off",
+			"@typescript-eslint/array-type": ["error", {default: "array-simple"}],
 		},
 	},
 	{

@@ -9,28 +9,28 @@ const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..")
 process.chdir(path.join(rootDir, "spec"));
 function runMsch(...args:string[]){
 	spyOn(console, "log");
-	mschGenerate.run(["node", path.join(rootDir, "build/index.js"), ...args], {throwOnError: true});
+	return mschGenerate.run(["node", path.join(rootDir, "build/index.js"), ...args], {throwOnError: true});
 }
 
 
 
 describe("msch build", () => {
 	for(const filename of fs.readdirSync("sample-input").filter(f => f.endsWith(".json"))){
-		it(`should parse file ${filename} and produce a binary`, () => {
+		it(`should parse file ${filename} and produce a binary`, async () => {
 			const filepath = path.join(os.tmpdir(), `msch-generate-test-build-${filename}`);
 			try {
 				fs.rmSync(filepath);
 			} catch {}
-			runMsch("build", path.join(process.cwd(), "sample-input", filename), "--output", filepath);
+			await runMsch("build", path.join(process.cwd(), "sample-input", filename), "--output", filepath);
 			fs.accessSync(filepath, fs.constants.R_OK);
 		});
 	}
 });
 
 describe("msch init", () => {
-	it(`should create a new schematic file that is valid JSON`, () => {
+	it(`should create a new schematic file that is valid JSON`, async () => {
 		const filepath = path.join(os.tmpdir(), "msch-generate-test-init.json");
-		runMsch(
+		await runMsch(
 			"init",
 			"--name",
 			"NAME",
@@ -43,8 +43,8 @@ describe("msch init", () => {
 
 describe("msch manipulate", () => {
 	for(const filename of fs.readdirSync("sample-binaries").filter(f => f.endsWith(".msch"))){
-		it(`should be able to read the binary file ${filename}`, () => {
-			runMsch("manipulate", path.join(process.cwd(), "sample-binaries", filename));
+		it(`should be able to read the binary file ${filename}`, async () => {
+			await runMsch("manipulate", path.join(process.cwd(), "sample-binaries", filename));
 		});
 	}
 });

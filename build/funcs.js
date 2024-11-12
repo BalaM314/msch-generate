@@ -5,7 +5,8 @@ export function parseIcons(data) {
         if (line.length == 0)
             continue;
         try {
-            icons["_" + line.split("=")[1].split("|")[0].replaceAll("-", "_")] = String.fromCodePoint(parseInt(line.split("=")[0]));
+            const [key, value] = line.split("=");
+            icons["_" + value.split("|")[0].replaceAll("-", "_")] = String.fromCodePoint(parseInt(key));
         }
         catch (err) {
             if (!(err instanceof RangeError)) {

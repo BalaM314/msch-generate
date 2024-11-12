@@ -1,7 +1,5 @@
 /**Parses icons out of the data in the icons.properties file from the Mindustry source code. */
-export declare function parseIcons(data: string[]): {
-    [id: string]: string;
-};
+export declare function parseIcons(data: string[]): Record<string, string>;
 declare class Message extends Error {
     name: string;
 }
