@@ -10,10 +10,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import os from "os";
 import { Schema } from "jsonschema";
-import { Application, arg } from "@balam314/cli-app";
+import { Application, ApplicationError, arg } from "@balam314/cli-app";
 import { Schematic, Tile, Point2, TypeIO, BlockConfig, BlockConfigType, MessageError } from "msch";
 import { buildSchematic } from "./buildSchematic.js";
-import { crash, escapePUA, fail, parseIcons, removeParams, tryRunOr } from "./funcs.js";
+import { crash, escapePUA, fail, parseIcons, removeParams, sanitizeFilename, tryRunOr } from "./funcs.js";
+import { inspect } from "node:util";
 
 function getStorePath(){
 	return (
@@ -247,6 +248,107 @@ mschGenerate.category("store", "Commands that manage Mindustry's schematic folde
 				].filter(Boolean).join(" "));
 			}
 		}
+	});
+	store.command("normalize", "Normalizes the filenames of your installed schematics.").args({
+		namedArgs: {
+			quiet: arg().description("Suppresses printing the full list of renames.").valueless(),
+		}
+	}).impl(async (opts) => {
+		function giveUp():never {
+			console.log(`Something went horribly wrong, please try to fix the directory structure at ${storePath}`);
+			process.exit(666);
+		}
+
+		const storePath = getStorePath();
+		const storeBackupPath = path.join(storePath, "..", "schematics_backup");
+		const tempStorePath = path.join(storePath, "..", "schematics_temp_");
+
+		//Make a backup if it doesn't exist
+		try {
+			await fs.access(storeBackupPath);
+		} catch {
+			await fs.cp(storePath, storeBackupPath, {
+				recursive: true,
+				errorOnExist: true,
+			}).catch((err) => {
+				console.log(err);
+				fail(`Failed to make a backup of the schematics directory.`);
+			});
+		}
+
+		//Check for the existence of the store files
+		await fs.access(storePath, fs.constants.W_OK).catch(async () => {
+			try {
+				await fs.access(tempStorePath, fs.constants.W_OK);
+				//schematics doesn't exist, but schematics_temp_ does and is a directory
+				await fs.rename(tempStorePath, storePath).catch(giveUp);
+			} catch(err){
+				fail(`Mindustry schematics path at ${storePath} does not exist.`);
+			}
+		});
+
+		const schematics = (await Promise.all(
+			(await fs.readdir(storePath))
+				.map(filename => [filename, path.join(storePath, filename)] as const)
+				.map(async ([filename, filepath]) => [filename, filepath, await fs.readFile(filepath)] as const)
+		)).map(([filename, filepath, data]) => {
+			let result = Schematic.read(data, 1024);
+			if(result instanceof Schematic && !result.tags["name"]) result = `Name is missing or empty`;
+			if(typeof result == "string") fail(`Schematic at ${filepath} is invalid: ${result}\nPlease move or delete it.`);
+			return [filename, filepath, result] as const;
+		});
+
+		//Make sure there are no duplicates
+		const newFilenames = new Map<string, string>();
+		const operations:Array<readonly [oldName:string, newName:string]> = schematics.map(([filename, filepath, schem]) => {
+			const schemName = schem.tags["name"]!;
+			const cleanedSchemName = sanitizeFilename(schemName);
+			if(newFilenames.has(cleanedSchemName)){
+				const otherSchemName = newFilenames.get(cleanedSchemName)!;
+				if(otherSchemName == schemName){
+					fail(`Multiple schematics exist with the name ${escapePUA(schemName)}`);
+				} else {
+					fail(`Multiple schematics exist with a name that corresponds to the filename ${cleanedSchemName}\nPlease rename one of the schematics "${otherSchemName}", "${schemName}"`);
+				}
+			}
+			newFilenames.set(cleanedSchemName, schemName);
+			return [filename, cleanedSchemName + ".msch"] as const;
+		});
+		const newPaths = operations.map(x => x[1]);
+		if(new Set(newPaths).size != newPaths.length) crash(`logic error`);
+
+		const filesToMove = operations.filter(([oldName, newName]) => oldName != newName).length;
+		if(filesToMove == 0){
+			console.log(`${schematics.length}/${schematics.length} files have the correct name.`);
+			return 0;
+		}
+		console.log(`${schematics.length - filesToMove}/${schematics.length} files have the correct name. Renaming ${filesToMove} files...`);
+		if(!opts.namedArgs.quiet){
+			console.log(operations.map(([from, to]) => `${from} -> ${to}`).join("\n"));
+		}
+
+		try {
+			await fs.access(tempStorePath);
+			//temp store path exists
+			const numFiles = (await fs.readdir(tempStorePath).catch(giveUp)).length;
+			if(numFiles == 0){
+				//empty, safe to delete
+				await fs.rmdir(tempStorePath).catch(giveUp);
+			} else {
+				giveUp();
+			}
+		} catch {}
+		await fs.rename(storePath, tempStorePath).catch(() => {
+			fail(`Could not move the schematics directory. Make sure Mindustry is closed.`);
+		});
+		await fs.mkdir(storePath);
+		await Promise.all(operations.map(([from, to]) =>
+			fs.rename(path.join(tempStorePath, from), path.join(storePath, to))
+		));
+		//everything succeeded, safe to delete the temp directory
+		await fs.rm(tempStorePath, { recursive: true });
+		console.log(`Done.`);
+
 	});
 });
 

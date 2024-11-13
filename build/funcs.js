@@ -1,3 +1,4 @@
+import { ApplicationError } from "@balam314/cli-app";
 /**Parses icons out of the data in the icons.properties file from the Mindustry source code. */
 export function parseIcons(data) {
     const icons = {};
@@ -17,14 +18,8 @@ export function parseIcons(data) {
     }
     return icons;
 }
-class Message extends Error {
-    constructor() {
-        super(...arguments);
-        this.name = "Message";
-    }
-}
 export function fail(message) {
-    throw new Message(message);
+    throw new ApplicationError(message);
 }
 export function crash(message) {
     throw new Error(message);
@@ -44,13 +39,26 @@ export function removeParams(object, ...remove) {
 export function escapePUA(input) {
     return input.replace(/[\uE800-\uF8FF]/g, c => `\\u${c.codePointAt(0)?.toString(16).toUpperCase()}`);
 }
+export function sanitizeFilename(input) {
+    if (input == ".") {
+        return "_";
+    }
+    else if (input == "..") {
+        return "__";
+    }
+    else if (/^(CON|AUX|PRN|NUL|(COM[0-9])|(LPT[0-9]))((\..*$)|$)/i.test(input)) {
+        //turn things like con.msch -> _con.msch, which is no longer reserved
+        input = "_" + input;
+    }
+    return input.replace(/[\0/\\"<>|:*?\uE800-\uF8FF]/g, "_");
+}
 export function tryRunOr(callback, errorHandler) {
     try {
         callback();
         return true;
     }
     catch (err) {
-        if (err instanceof Message) {
+        if (err instanceof ApplicationError) {
             errorHandler(err);
             return false;
         }
