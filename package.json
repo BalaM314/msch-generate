@@ -1,6 +1,6 @@
 {
   "name": "msch-generate",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Mindustry schematic buildtool.",
   "main": "build/app.js",
   "type": "module",

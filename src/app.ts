@@ -184,7 +184,6 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
 			try {
 				data = await fs.readFile(targetPath);
 			} catch {
-				console.log("file nonexistent");
 				//doesn't exist
 				return;
 			}
@@ -192,7 +191,6 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
 			try {
 				existingSchematic = Schematic.read(data);
 			} catch {
-				console.log("file invalid");
 				//invalid
 				await fs.rm(targetPath);
 				return;
@@ -200,18 +198,14 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
 			if(typeof existingSchematic == "string"){
 				//invalid
 				await fs.rm(targetPath);
-				console.log("file invalid 2");
 			} else {
 				if(schem.tags["name"]! !== existingSchematic.tags["name"]){
 					if(opts.namedArgs.force){
-						console.log("force specified");
 						await fs.rm(targetPath);
 						return;
 					} else {
 						fail(`Refusing to overwrite existing schematic file ${filename}: schematic names do not match (use --force to override)`);
 					}
-				} else {
-					console.log(`names exactly equal`);
 				}
 			}
 		})();
