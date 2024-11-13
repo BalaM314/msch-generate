@@ -121,6 +121,8 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
 mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args({
 	namedArgs: {
 		output: arg().optional().description("Output file location").aliases("o"),
+		"no-show": arg().valueless().description(`Suppresses displaying the schematic.`).aliases("n"),
+		"verbose": arg().valueless().description(`Displays more information about the schematic.`).aliases("v"),
 	},
 	positionalArgs: [{
 		name: "file",
@@ -154,20 +156,17 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
 	console.log("Building schematic...");
 	//Use the schematic file as the working directory, to correctly resolve relative paths
 	const cwd = process.cwd();
+
 	process.chdir(path.join(target, ".."));
-	tryRunOr(async () => {
-		const schem = buildSchematic(data, schema, icons);
-		process.chdir(cwd);
-		console.log(`Built schematic.`);
-		schem.display(false);
-		const outputPath = opts.namedArgs.output ?? target.replace(/(.json)?$/, ".msch");
-		console.log(`Writing to ${outputPath}...`);
-		await fs.writeFile(outputPath, schem.write().toBuffer());
-		console.log("Done!");
-	}, e => {
-		console.error(`Error: ${e.message}\nBuild failed.`);
-		process.exit(1);
-	});
+	const schem = buildSchematic(data, schema, icons);
+	process.chdir(cwd);
+
+	console.log(`Built schematic.`);
+	if(!opts.namedArgs["no-show"]) schem.display(opts.namedArgs.verbose);
+	const outputPath = opts.namedArgs.output ?? target.replace(/(.json)?$/, ".msch");
+	console.log(`Writing to ${outputPath}...`);
+	await fs.writeFile(outputPath, schem.write().toBuffer());
+	console.log("Done!");
 
 });
 mschGenerate.command("init", "Creates a JSON schematic file.").args({
@@ -351,5 +350,3 @@ mschGenerate.category("store", "Commands that manage Mindustry's schematic folde
 
 	});
 });
-
-void mschGenerate.run(process.argv);

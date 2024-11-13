@@ -1,8 +1,8 @@
 {
   "name": "msch-generate",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Mindustry schematic buildtool.",
-  "main": "build/index.js",
+  "main": "build/app.js",
   "type": "module",
   "scripts": {
     "test": "tsc -b spec && jasmine",
@@ -23,7 +23,7 @@
     "url": "https://github.com/BalaM314/msch/issues"
   },
   "bin": {
-    "msch": "./build/index.js"
+    "msch": "./build/cli.js"
   },
   "homepage": "https://github.com/BalaM314/msch#readme",
   "devDependencies": {
