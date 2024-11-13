@@ -6,13 +6,25 @@ msch-generate is free software: you can redistribute it and/or modify it under t
 msch-generate is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License along with msch-generate. If not, see <https://www.gnu.org/licenses/>.
 */
-import { Application, arg } from "@balam314/cli-app";
-import * as fs from "fs";
+import fs from "node:fs";
+import path from "node:path";
+import os from "os";
 import { Schema } from "jsonschema";
+import { Application, arg } from "@balam314/cli-app";
 import { Schematic, Tile, Point2, TypeIO, BlockConfig, BlockConfigType, MessageError } from "msch";
-import path from "path";
 import { buildSchematic } from "./buildSchematic.js";
-import { parseIcons, tryRunOr } from "./funcs.js";
+import { fail, parseIcons, tryRunOr } from "./funcs.js";
+
+function getStorePath(){
+	return (
+		process.platform == "win32" ? path.join(process.env["APPDATA"]!, "Mindustry/schematics") :
+		process.platform == "darwin" ? path.join(os.homedir(), "/Library/Application Support/Mindustry/schematics") : 
+		process.platform == "linux" ? path.join((
+			process.env["XDG_DATA_HOME"] ?? path.join(os.homedir(), "/.local/share")
+		), "/Mindustry/schematics") :
+		fail(`Unsupported platform ${process.platform}`)
+	);
+}
 
 export const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
 mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args({
@@ -194,6 +206,14 @@ mschGenerate.command("init", "Creates a JSON schematic file.").args({
 	const outputJSON = JSON.stringify(jsonData, undefined, `\t`);
 	console.log(`Writing JSON data to ${opts.positionalArgs[0]}`);
 	fs.writeFileSync(opts.positionalArgs[0]!, outputJSON, "utf-8");
+});
+mschGenerate.category("store", "Commands that manage Mindustry's schematic folder.", store => {
+	store.command("count", "Displays the number of schematics you have installed.").args({}).impl(() => {
+		console.log(fs.readdirSync(getStorePath()).length);
+	});
+	store.command("path", "Outputs the path to your schematics folder.").args({}).impl(() => {
+		console.log(getStorePath());
+	});
 });
 
 void mschGenerate.run(process.argv);
