@@ -167,7 +167,7 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
 	if(!opts.namedArgs["no-show"]) schem.display(opts.namedArgs.verbose);
 	const schematicData = schem.write().toBuffer();
 
-	if(opts.namedArgs.output || !opts.namedArgs.import){
+	if(opts.namedArgs.output !== undefined || !opts.namedArgs.import){
 		const outputPath = opts.namedArgs.output ?? target.replace(/(.json)?$/, ".msch");
 		console.log(`Writing to ${outputPath}...`);
 		await fs.writeFile(outputPath, schematicData);
