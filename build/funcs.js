@@ -40,7 +40,7 @@ export function escapePUA(input) {
     return input.replace(/[\uE800-\uF8FF]/g, c => `\\u${c.codePointAt(0)?.toString(16).toUpperCase()}`);
 }
 export function sanitizeFilename(input) {
-    if (input == ".") {
+    if (input == "" || input == ".") {
         return "_";
     }
     else if (input == "..") {

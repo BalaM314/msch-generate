@@ -122,7 +122,9 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
     namedArgs: {
         output: arg().optional().description("Output file location").aliases("o"),
         "no-show": arg().valueless().description(`Suppresses displaying the schematic.`).aliases("n"),
-        "verbose": arg().valueless().description(`Displays more information about the schematic.`).aliases("v"),
+        verbose: arg().valueless().description(`Displays more information about the schematic.`).aliases("v"),
+        "import": arg().valueless().description(`Automatically copies the schematic file to your Mindustry schematics folder.`).aliases("i"),
+        force: arg().valueless().description(`When importing a schematic: Deletes an existing schematic file even if the name doesn't match.`).aliases("f"),
     },
     positionalArgs: [{
             name: "file",
@@ -160,10 +162,61 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
     console.log(`Built schematic.`);
     if (!opts.namedArgs["no-show"])
         schem.display(opts.namedArgs.verbose);
-    const outputPath = opts.namedArgs.output ?? target.replace(/(.json)?$/, ".msch");
-    console.log(`Writing to ${outputPath}...`);
-    await fs.writeFile(outputPath, schem.write().toBuffer());
-    console.log("Done!");
+    const schematicData = schem.write().toBuffer();
+    if (opts.namedArgs.output || !opts.namedArgs.import) {
+        const outputPath = opts.namedArgs.output ?? target.replace(/(.json)?$/, ".msch");
+        console.log(`Writing to ${outputPath}...`);
+        await fs.writeFile(outputPath, schematicData);
+    }
+    if (opts.namedArgs.import) {
+        console.log(`Importing to Mindustry's schematic folder...`);
+        const filename = sanitizeFilename(schem.tags["name"]) + ".msch";
+        const targetPath = path.join(getStorePath(), filename);
+        //Check overwrite safety
+        await (async () => {
+            let data;
+            try {
+                data = await fs.readFile(targetPath);
+            }
+            catch {
+                console.log("file nonexistent");
+                //doesn't exist
+                return;
+            }
+            let existingSchematic;
+            try {
+                existingSchematic = Schematic.read(data);
+            }
+            catch {
+                console.log("file invalid");
+                //invalid
+                await fs.rm(targetPath);
+                return;
+            }
+            if (typeof existingSchematic == "string") {
+                //invalid
+                await fs.rm(targetPath);
+                console.log("file invalid 2");
+            }
+            else {
+                if (schem.tags["name"] !== existingSchematic.tags["name"]) {
+                    if (opts.namedArgs.force) {
+                        console.log("force specified");
+                        await fs.rm(targetPath);
+                        return;
+                    }
+                    else {
+                        fail(`Refusing to overwrite existing schematic file ${filename}: schematic names do not match (use --force to override)`);
+                    }
+                }
+                else {
+                    console.log(`names exactly equal`);
+                }
+            }
+        })();
+        await fs.writeFile(targetPath, schematicData);
+        console.log(`Restart the game to see changes.`);
+    }
 });
 mschGenerate.command("init", "Creates a JSON schematic file.").args({
     namedArgs: {

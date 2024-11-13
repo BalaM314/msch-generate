@@ -46,7 +46,7 @@ export function escapePUA(input:string):string {
 }
 
 export function sanitizeFilename(input:string):string {
-	if(input == "."){
+	if(input == "" || input == "."){
 		return "_";
 	} else if(input == ".."){
 		return "__";
