@@ -6,13 +6,13 @@ msch-generate is free software: you can redistribute it and/or modify it under t
 msch-generate is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License along with msch-generate. If not, see <https://www.gnu.org/licenses/>.
 */
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 import os from "os";
 import { Application, arg } from "@balam314/cli-app";
 import { Schematic, MessageError } from "msch";
 import { buildSchematic } from "./buildSchematic.js";
-import { fail, parseIcons, tryRunOr } from "./funcs.js";
+import { crash, fail, parseIcons, tryRunOr } from "./funcs.js";
 function getStorePath() {
     return (process.platform == "win32" ? path.join(process.env["APPDATA"], "Mindustry/schematics") :
         process.platform == "darwin" ? path.join(os.homedir(), "/Library/Application Support/Mindustry/schematics") :
@@ -31,12 +31,12 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
             .valueless().aliases("i")
     },
     positionalArgs: []
-}).impl((opts, app) => {
+}).impl(async (opts, app) => {
     let schem = Schematic.blank;
     schem.tags["description"] = "Made with https://github.com/BalaM314/msch-generate";
     if (opts.namedArgs.read) {
         try {
-            const result = Schematic.read(fs.readFileSync(opts.namedArgs.read));
+            const result = Schematic.read(await fs.readFile(opts.namedArgs.read));
             if (typeof result == "string") {
                 console.error("Invalid schematic.", result);
                 return 1;
@@ -56,7 +56,8 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
         console.log(`The schematic variable is "schem".`);
         const help = "Type .help for help.";
         process.stdout.write("\n> ");
-        process.stdin.on("data", (data) => {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        process.stdin.on("data", async (data) => {
             const line = data.toString().split(/\r?\n/g)[0];
             if (line.startsWith(".")) {
                 if (line == ".exit") {
@@ -74,7 +75,7 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
                     const outFile = line.split(".output ")[1];
                     if (outFile) {
                         const outputPath = outFile.endsWith(".msch") ? outFile : outFile + ".msch";
-                        fs.writeFileSync(outputPath, schem.write().toBuffer());
+                        await fs.writeFile(outputPath, schem.write().toBuffer());
                         console.log(`Wrote modified file to ${outputPath}.`);
                     }
                     else {
@@ -126,41 +127,40 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
             description: "The JSON file to build"
         }],
     positionalArgCountCheck: "warn",
-}).impl((opts, app) => {
+}).impl(async (opts, app) => {
     const target = opts.positionalArgs[0];
-    if (!fs.existsSync(target)) {
-        console.error(`Filepath ${target} does not exist.`);
-        return;
+    let data;
+    try {
+        data = await fs.readFile(target, "utf-8");
     }
-    const data = fs.readFileSync(target, "utf-8");
+    catch {
+        console.error(`Filepath ${target} does not exist or cannot be read.`);
+        return 1;
+    }
     const schemaPath = path.join(app.sourceDirectory, "..", "docs/msch-v1.schema.json");
     const iconsPath = path.join(app.sourceDirectory, "..", "cache/icons.properties");
+    const iconsText = await fs.readFile(iconsPath, 'utf-8').catch(() => crash(`Icons file does not exist. This was likely caused by an improper or corrupt installation. (Expected location: ${iconsPath})`));
+    const schemaText = await fs.readFile(schemaPath, "utf8").catch(() => crash(`JSON schema file does not exist. This was likely caused by an improper or corrupt installation. (Expected location: ${schemaPath})`));
     let schema;
-    if (!fs.existsSync(schemaPath)) {
-        throw new Error(`JSON schema file does not exist. This was likely caused by an improper or corrupt installation. (Expected location: ${schemaPath})`);
-    }
-    if (!fs.existsSync(iconsPath)) {
-        throw new Error(`Icons file does not exist. This was likely caused by an improper or corrupt installation. (Expected location: ${iconsPath})`);
-    }
     try {
-        schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+        schema = JSON.parse(schemaText);
     }
-    catch (err) {
-        throw new Error("JSON schema file is invalid. This was likely caused by an improper or corrupt installation.");
+    catch {
+        crash("JSON schema file is invalid. This was likely caused by an improper or corrupt installation.");
     }
-    const icons = parseIcons(fs.readFileSync(iconsPath, 'utf-8').split(/\r?\n/g));
+    const icons = parseIcons(iconsText.split(/\r?\n/g));
     console.log("Building schematic...");
     //Use the schematic file as the working directory, to correctly resolve relative paths
     const cwd = process.cwd();
     process.chdir(path.join(target, ".."));
-    tryRunOr(() => {
+    tryRunOr(async () => {
         const schem = buildSchematic(data, schema, icons);
         process.chdir(cwd);
         console.log(`Built schematic.`);
         schem.display(false);
         const outputPath = opts.namedArgs.output ?? target.replace(/(.json)?$/, ".msch");
         console.log(`Writing to ${outputPath}...`);
-        fs.writeFileSync(outputPath, schem.write().toBuffer());
+        await fs.writeFile(outputPath, schem.write().toBuffer());
         console.log("Done!");
     }, e => {
         console.error(`Error: ${e.message}\nBuild failed.`);
@@ -178,7 +178,7 @@ mschGenerate.command("init", "Creates a JSON schematic file.").args({
             description: "The path of the JSON file to create",
         }],
     positionalArgCountCheck: "warn",
-}).impl((opts, app) => {
+}).impl(async (opts, app) => {
     const jsonData = {
         "$schema": "https://raw.githubusercontent.com/BalaM314/msch-generate/main/docs/msch-v1.schema.json",
         info: {
@@ -202,14 +202,17 @@ mschGenerate.command("init", "Creates a JSON schematic file.").args({
     };
     const outputJSON = JSON.stringify(jsonData, undefined, `\t`);
     console.log(`Writing JSON data to ${opts.positionalArgs[0]}`);
-    fs.writeFileSync(opts.positionalArgs[0], outputJSON, "utf-8");
+    await fs.writeFile(opts.positionalArgs[0], outputJSON, "utf-8");
 });
 mschGenerate.category("store", "Commands that manage Mindustry's schematic folder.", store => {
-    store.command("count", "Displays the number of schematics you have installed.").args({}).impl(() => {
-        console.log(fs.readdirSync(getStorePath()).length);
+    store.command("count", "Displays the number of schematics you have installed.").args({}).impl(async () => {
+        console.log((await fs.readdir(getStorePath())).length);
     });
     store.command("path", "Outputs the path to your schematics folder.").args({}).impl(() => {
         console.log(getStorePath());
+    });
+    store.command("list", "Prints information about each of your installed schematics.").args({}).impl(async () => {
+        const schematics = await fs.readdir(getStorePath());
     });
 });
 void mschGenerate.run(process.argv);
