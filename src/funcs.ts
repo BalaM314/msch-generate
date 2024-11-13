@@ -41,6 +41,14 @@ export function getKey<T extends {}, K extends PropertyKey>(object:T, key:K):(T 
 	return (object as never)[key] as (T extends unknown ? T[K & keyof T] : never) | undefined;
 }
 
+export function removeParams(object:{}, ...remove:string[]){
+	return Object.fromEntries(Object.entries(object).filter(([k]) => !remove.includes(k)));
+}
+
+export function escapePUA(input:string):string {
+	return input.replace(/[\uE800-\uF8FF]/g, c => `\\u${c.codePointAt(0)?.toString(16).toUpperCase()}`);
+}
+
 export function tryRunOr<T>(callback:() => T, errorHandler:(err:Message) => unknown):boolean {
 	try {
 		callback();

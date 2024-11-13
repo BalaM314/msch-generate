@@ -38,6 +38,12 @@ export function getKey(object, key) {
         crash(`getKey() is unsafe on an object that inherits from Object.prototype, because it will cause type unsoundness if key is "__proto__" or "hasOwnProperty"`);
     return object[key];
 }
+export function removeParams(object, ...remove) {
+    return Object.fromEntries(Object.entries(object).filter(([k]) => !remove.includes(k)));
+}
+export function escapePUA(input) {
+    return input.replace(/[\uE800-\uF8FF]/g, c => `\\u${c.codePointAt(0)?.toString(16).toUpperCase()}`);
+}
 export function tryRunOr(callback, errorHandler) {
     try {
         callback();

@@ -12,7 +12,7 @@ import os from "os";
 import { Application, arg } from "@balam314/cli-app";
 import { Schematic, MessageError } from "msch";
 import { buildSchematic } from "./buildSchematic.js";
-import { crash, fail, parseIcons, tryRunOr } from "./funcs.js";
+import { crash, escapePUA, fail, parseIcons, removeParams, tryRunOr } from "./funcs.js";
 function getStorePath() {
     return (process.platform == "win32" ? path.join(process.env["APPDATA"], "Mindustry/schematics") :
         process.platform == "darwin" ? path.join(os.homedir(), "/Library/Application Support/Mindustry/schematics") :
@@ -211,8 +211,34 @@ mschGenerate.category("store", "Commands that manage Mindustry's schematic folde
     store.command("path", "Outputs the path to your schematics folder.").args({}).impl(() => {
         console.log(getStorePath());
     });
-    store.command("list", "Prints information about each of your installed schematics.").args({}).impl(async () => {
-        const schematics = await fs.readdir(getStorePath());
+    store.command("list", "Prints information about each of your installed schematics.").args({
+        namedArgs: {
+            "name-length": arg().description("Max length for a schematic name.").default("25"),
+            tags: arg().description("Show all tag information.").valueless(),
+            filename: arg().description("Whether to use the filename instead of the schematic's name.").valueless(),
+        }
+    }).impl(async (opts) => {
+        const storePath = getStorePath();
+        const schematics = (await Promise.all((await fs.readdir(storePath))
+            .map(async (filename) => [filename, await fs.readFile(path.join(storePath, filename))]))).map(([filename, data]) => [filename, Schematic.read(data)]);
+        for (const [filename, schem] of schematics) {
+            if (typeof schem == "string") {
+                console.log(`${filename}\t\tError: ${schem}`);
+            }
+            else {
+                let nameMaxLength = Number(opts.namedArgs["name-length"]);
+                if (isNaN(nameMaxLength))
+                    nameMaxLength = 25;
+                console.log([
+                    (opts.namedArgs.filename ?
+                        filename.split(/.msch$/)[0]
+                        : escapePUA(schem.tags["name"] ?? `<schematic name missing>`)).slice(0, nameMaxLength).padEnd(nameMaxLength, " "),
+                    `(${schem.width}x${schem.height})`.padEnd(7, " "),
+                    escapePUA(schem.tags["description"] ?? `<no description>`).replace(/\r?\n/g, "\\n"),
+                    opts.namedArgs.tags && `Tags: ${escapePUA(JSON.stringify(removeParams(schem.tags, "name", "description")))}`
+                ].filter(Boolean).join(" "));
+            }
+        }
     });
 });
 void mschGenerate.run(process.argv);
