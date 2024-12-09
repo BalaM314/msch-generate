@@ -31,12 +31,12 @@ export const mschGenerate = new Application("msch", "Mindustry schematic generat
 mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args({
 	positionalArgCountCheck: "error",
 	namedArgs: {
-		read: arg().description("The path to the file to load as a schematic.")
-			.optional().aliases("r"),
-		verbose: arg().description("Whether to be verbose when displaying the loaded schematic. WARNING: may spam console.")
-			.valueless().aliases("v"),
-		interactive: arg().description("Starts a shell, allowing you to edit the schematic by typing JS code.")
-			.valueless().aliases("i")
+		read: arg().optional().aliases("r")
+			.description("The path to the file to load as a schematic."),
+		verbose: arg().valueless().aliases("v")
+			.description("Whether to be verbose when displaying the loaded schematic. WARNING: may spam console."),
+		interactive: arg().valueless().aliases("i")
+			.description("Starts a shell, allowing you to edit the schematic by typing JS code."),
 	},
 	positionalArgs: []
 }).impl(async (opts, app) => {
@@ -120,11 +120,16 @@ mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args
 });
 mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args({
 	namedArgs: {
-		output: arg().optional().description("Output file location").aliases("o"),
-		"no-show": arg().valueless().description(`Suppresses displaying the schematic.`).aliases("n"),
-		verbose: arg().valueless().description(`Displays more information about the schematic.`).aliases("v"),
-		"import": arg().valueless().description(`Automatically copies the schematic file to your Mindustry schematics folder.`).aliases("i"),
-		force: arg().valueless().description(`When importing a schematic: Deletes an existing schematic file even if the name doesn't match.`).aliases("f"),
+		output: arg().optional().aliases("o")
+			.description("Output file location"),
+		"no-show": arg().valueless().aliases("n")
+			.description(`Suppresses displaying the schematic.`),
+		verbose: arg().valueless().aliases("v")
+			.description(`Displays more information about the schematic.`),
+		"import": arg().valueless().aliases("i")
+			.description(`Automatically copies the schematic file to your Mindustry schematics folder.`),
+		force: arg().valueless().aliases("f")
+			.description(`When importing a schematic: Deletes an existing schematic file even if the name doesn't match.`),
 	},
 	positionalArgs: [{
 		name: "file",
@@ -217,9 +222,12 @@ mschGenerate.command("build", "Builds a schematic.").default().aliases("b").args
 });
 mschGenerate.command("init", "Creates a JSON schematic file.").args({
 	namedArgs: {
-		name: arg().optional().description("Project name").aliases("n"),
-		description: arg().optional().description("Project description").aliases("d", "desc"),
-		authors: arg().optional().description("Project authors").aliases("author", "a"),
+		name: arg().optional().aliases("n")
+			.description("Project name"),
+		description: arg().optional().aliases("d", "desc")
+			.description("Project description"),
+		authors: arg().optional().aliases("author", "a")
+			.description("Project authors"),
 	},
 	positionalArgs: [{
 		name: "file",
@@ -265,9 +273,12 @@ mschGenerate.category("store", "Commands that manage Mindustry's schematic folde
 	});
 	store.command("list", "Prints information about each of your installed schematics.").args({
 		namedArgs: {
-			"name-length": arg().description("Max length for a schematic name.").default("25"),
-			tags: arg().description("Show all tag information.").valueless(),
-			filename: arg().description("Whether to use the filename instead of the schematic's name.").valueless(),
+			"name-length": arg().aliases("l").default("25")
+				.description("Max length for a schematic name."),
+			tags: arg().valueless().aliases("t")
+				.description("Show all tag information."),
+			filename: arg().valueless().aliases("f")
+				.description("Whether to use the filename instead of the schematic's name."),
 		}
 	}).impl(async (opts) => {
 		const storePath = getStorePath();
@@ -296,7 +307,8 @@ mschGenerate.category("store", "Commands that manage Mindustry's schematic folde
 	});
 	store.command("normalize", "Normalizes the filenames of your installed schematics.").args({
 		namedArgs: {
-			quiet: arg().description("Suppresses printing the full list of renames.").valueless(),
+			quiet: arg().aliases("q").valueless()
+				.description("Suppresses printing the full list of renames."),
 		}
 	}).impl(async (opts) => {
 		function giveUp():never {
