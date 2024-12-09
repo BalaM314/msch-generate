@@ -19,7 +19,7 @@ function getStorePath() {
             process.platform == "linux" ? path.join((process.env["XDG_DATA_HOME"] ?? path.join(os.homedir(), "/.local/share")), "/Mindustry/schematics") :
                 fail(`Unsupported platform ${process.platform}`));
 }
-export const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
+export const mschGenerate = new Application("msch", "Mindustry schematic generator and parser.");
 mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args({
     positionalArgCountCheck: "error",
     namedArgs: {
@@ -305,7 +305,6 @@ mschGenerate.category("store", "Commands that manage Mindustry's schematic folde
                 recursive: true,
                 errorOnExist: true,
             }).catch((err) => {
-                console.log(err);
                 fail(`Failed to make a backup of the schematics directory.`);
             });
         }

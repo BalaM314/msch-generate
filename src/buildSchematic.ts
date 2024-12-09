@@ -222,7 +222,7 @@ export function buildSchematic(rawData:string, schema:Schema, icons: Record<stri
 		fail(`Schematic file contains invalid JSON: ${(err as SyntaxError).message}`);
 	}
 	const {valid, errors} = jsonschem.validate(unvalidatedData, schema);
-	if(!valid) fail(`Schematic file is invalid: ${errors[0]?.stack}`);
+	if(!valid) fail(`Schematic file is invalid: ${errors[0]!.stack}`);
 	const validatedData = unvalidatedData as SchematicData;
 	[validatedData.info.tags, validatedData.consts, validatedData.tiles.programs, validatedData.tiles.blocks]
 		.filter(Boolean).forEach(o => {

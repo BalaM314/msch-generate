@@ -46,6 +46,9 @@ export default tseslint.config(
 			"@typescript-eslint/no-this-alias": "off",
 			"@typescript-eslint/prefer-regexp-exec": "off",
 			"@typescript-eslint/array-type": ["error", {default: "array-simple"}],
+			"@typescript-eslint/restrict-template-expressions": ["error", {
+				allowNullish: false,
+			}]
 		},
 	},
 	{

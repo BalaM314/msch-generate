@@ -27,7 +27,7 @@ function getStorePath(){
 	);
 }
 
-export const mschGenerate = new Application("msch-generate", "Mindustry schematic generator and parser.");
+export const mschGenerate = new Application("msch", "Mindustry schematic generator and parser.");
 mschGenerate.command("manipulate", "Manipulates a schematic.").aliases("m").args({
 	positionalArgCountCheck: "error",
 	namedArgs: {
@@ -253,7 +253,7 @@ mschGenerate.command("init", "Creates a JSON schematic file.").args({
 		}
 	};
 	const outputJSON = JSON.stringify(jsonData, undefined, `\t`);
-	console.log(`Writing JSON data to ${opts.positionalArgs[0]}`);
+	console.log(`Writing JSON data to ${opts.positionalArgs[0]!}`);
 	await fs.writeFile(opts.positionalArgs[0]!, outputJSON, "utf-8");
 });
 mschGenerate.category("store", "Commands that manage Mindustry's schematic folder.", store => {
@@ -316,7 +316,6 @@ mschGenerate.category("store", "Commands that manage Mindustry's schematic folde
 				recursive: true,
 				errorOnExist: true,
 			}).catch((err) => {
-				console.log(err);
 				fail(`Failed to make a backup of the schematics directory.`);
 			});
 		}

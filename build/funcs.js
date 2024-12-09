@@ -37,7 +37,7 @@ export function removeParams(object, ...remove) {
     return Object.fromEntries(Object.entries(object).filter(([k]) => !remove.includes(k)));
 }
 export function escapePUA(input) {
-    return input.replace(/[\uE800-\uF8FF]/g, c => `\\u${c.codePointAt(0)?.toString(16).toUpperCase()}`);
+    return input.replace(/[\uE800-\uF8FF]/g, c => `\\u${c.codePointAt(0).toString(16).toUpperCase()}`);
 }
 export function sanitizeFilename(input) {
     if (input == "" || input == ".") {

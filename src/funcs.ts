@@ -42,7 +42,7 @@ export function removeParams(object:{}, ...remove:string[]){
 }
 
 export function escapePUA(input:string):string {
-	return input.replace(/[\uE800-\uF8FF]/g, c => `\\u${c.codePointAt(0)?.toString(16).toUpperCase()}`);
+	return input.replace(/[\uE800-\uF8FF]/g, c => `\\u${c.codePointAt(0)!.toString(16).toUpperCase()}`);
 }
 
 export function sanitizeFilename(input:string):string {
